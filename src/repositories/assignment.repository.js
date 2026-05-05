@@ -1,17 +1,15 @@
-// src/repositories/assignment.repository.js
 const { AppDataSource } = require("../config/data-source");
 const Assignment = require("../entities/Assignment");
-const { Between } = require("typeorm");
 
 const AssignmentRepository = AppDataSource.getRepository(Assignment).extend({
-
-    // 1. Create Assignment
-    async createAssignment(assignmentData) {
-        const assignment = this.create(assignmentData);
+    
+    // 1. Create a new assignment
+    async createAssignment(data) {
+        const assignment = this.create(data);
         return await this.save(assignment);
     },
 
-    // 2. Find Assignment By ID
+    // 2. Find a specific assignment by ID with all relations
     async findAssignmentById(id) {
         return await this.findOne({
             where: { id },
@@ -19,7 +17,7 @@ const AssignmentRepository = AppDataSource.getRepository(Assignment).extend({
         });
     },
 
-    // 3. Get all assignments for a specific Request (History of assignments)
+    // 3. Get all assignments for a specific service request (History)
     async getAssignmentsByRequest(requestId) {
         return await this.find({
             where: { request: { id: requestId } },
@@ -28,7 +26,7 @@ const AssignmentRepository = AppDataSource.getRepository(Assignment).extend({
         });
     },
 
-    // 4. Get all assignments for a specific Technician
+    // 4. Get all assignments for a specific technician
     async getAssignmentsByTechnician(technicianId) {
         return await this.find({
             where: { technician: { id: technicianId } },
@@ -37,7 +35,7 @@ const AssignmentRepository = AppDataSource.getRepository(Assignment).extend({
         });
     },
 
-    // 5. Get the most recent/active Assignment for a Request
+    // 5. Get the most recent/active assignment for a request
     async getActiveAssignmentByRequest(requestId) {
         return await this.findOne({
             where: { request: { id: requestId } },
@@ -46,21 +44,30 @@ const AssignmentRepository = AppDataSource.getRepository(Assignment).extend({
         });
     },
 
-    // 6. Get Technician Assignments by Date Range (For reporting/payroll)
-    async getTechnicianAssignmentsByDate(technicianId, startDate, endDate) {
-        return await this.find({
-            where: {
-                technician: { id: technicianId },
-                assigned_at: Between(startDate, endDate)
-            },
-            relations: ["request"]
-        });
+    // 6. Get technician schedule for a specific date
+    async getTechnicianAssignmentsByDate(technicianId, dateString) {
+        // dateString format: 'YYYY-MM-DD'
+        return await this.createQueryBuilder("assignment")
+            .leftJoinAndSelect("assignment.request", "request")
+            .where("assignment.technician_id = :technicianId", { technicianId })
+            .andWhere("DATE(request.preferred_time) = :date", { date: dateString })
+            .getMany();
     },
 
-    // 7. Delete Assignment (Unassign)
+    // 7. Delete an assignment (Re-assignment or Cancellation logic)
     async deleteAssignment(id) {
-        const result = await this.delete(id);
-        return result.affected > 0;
+        return await this.delete(id);
+    },
+
+    // Existing check for technician conflicts
+    async isTechnicianBusy(technicianId, preferredTime) {
+        const conflict = await this.createQueryBuilder("assignment")
+            .leftJoin("assignment.request", "request")
+            .where("assignment.technician_id = :technicianId", { technicianId })
+            .andWhere("request.preferred_time = :preferredTime", { preferredTime })
+            .getOne();
+
+        return !!conflict;
     }
 });
 
