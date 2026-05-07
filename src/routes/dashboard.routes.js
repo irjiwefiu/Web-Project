@@ -64,4 +64,4 @@ router.get(
     DashboardController.getTechnicianDashboard
 );
 
-module.exports = router;
+export default router;

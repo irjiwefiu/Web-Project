@@ -109,4 +109,4 @@ router.get(
     ServiceRequestController.searchServiceRequestsController
 );
 
-module.exports = router;
+export default router;

@@ -1,4 +1,4 @@
-const AuthService = require("../services/auth.service");
+import AuthService from "../services/auth.service.js";
 
 /**
  * AuthController
@@ -61,4 +61,4 @@ const AuthController = {
     }
 };
 
-module.exports = AuthController;
+export default AuthController;

@@ -59,4 +59,4 @@ router.delete(
     CategoryController.deleteCategoryController
 );
 
-module.exports = router;
+export default router;

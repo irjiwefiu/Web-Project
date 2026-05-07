@@ -1,6 +1,6 @@
 // src/repositories/role.repository.js
-const { AppDataSource } = require("../config/data-source");
-const Role = require("../entities/Role");
+import AppDataSource from "../config/data-source.js";
+import Role from "../entities/Role.js";
 
 const RoleRepository = AppDataSource.getRepository(Role).extend({
     
@@ -30,4 +30,4 @@ const RoleRepository = AppDataSource.getRepository(Role).extend({
     }
 });
 
-module.exports = RoleRepository;
+export default RoleRepository;

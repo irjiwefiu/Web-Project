@@ -1,5 +1,5 @@
-const { AppDataSource } = require("../config/data-source");
-const Assignment = require("../entities/Assignment");
+import AppDataSource from "../config/data-source.js";
+import Assignment from "../entities/Assignment";
 
 const AssignmentRepository = AppDataSource.getRepository(Assignment).extend({
     
@@ -71,4 +71,4 @@ const AssignmentRepository = AppDataSource.getRepository(Assignment).extend({
     }
 });
 
-module.exports = AssignmentRepository;
+export default AssignmentRepository;

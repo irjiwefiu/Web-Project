@@ -10,8 +10,10 @@ const validate = (schema, property) => {
     };
 };
 
-module.exports = {
-    validateRequestBody: (schema) => validate(schema, "body"),
-    validateQueryParams: (schema) => validate(schema, "query"),
-    validateRouteParams: (schema) => validate(schema, "params")
+const validation = {
+  validateRequestBody: (schema) => validate(schema, "body"),
+  validateQueryParams: (schema) => validate(schema, "query"),
+  validateRouteParams: (schema) => validate(schema, "params"),
 };
+
+export default validation;

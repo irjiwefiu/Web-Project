@@ -9,4 +9,4 @@ const logIncomingRequest = (req, res, next) => {
     next();
 };
 
-module.exports = { logIncomingRequest };
+export default logIncomingRequest;

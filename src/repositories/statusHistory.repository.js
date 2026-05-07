@@ -1,5 +1,5 @@
-const { AppDataSource } = require("../config/data-source");
-const StatusHistory = require("../entities/StatusHistory");
+import AppDataSource from "../config/data-source.js";
+import StatusHistory from ("../entities/StatusHistory");
 
 const StatusHistoryRepository = AppDataSource.getRepository(StatusHistory).extend({
     
@@ -33,4 +33,4 @@ const StatusHistoryRepository = AppDataSource.getRepository(StatusHistory).exten
     }
 });
 
-module.exports = StatusHistoryRepository;
+export default StatusHistoryRepository;

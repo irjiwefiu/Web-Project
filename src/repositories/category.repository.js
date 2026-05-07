@@ -1,6 +1,6 @@
 // src/repositories/category.repository.js
-const { AppDataSource } = require("../config/data-source");
-const ServiceCategory = require("../entities/ServiceCategory");
+import AppDataSource from "../config/data-source.js";
+import ServiceCategory from "../entities/ServiceCategory";
 
 const CategoryRepository = AppDataSource.getRepository(ServiceCategory).extend({
     
@@ -37,4 +37,4 @@ const CategoryRepository = AppDataSource.getRepository(ServiceCategory).extend({
     }
 });
 
-module.exports = CategoryRepository;
+export default CategoryRepository;

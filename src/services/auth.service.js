@@ -1,7 +1,7 @@
-const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
-const UserRepository = require("../repositories/user.repository");
-const RoleRepository = require("../repositories/role.repository");
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+import UserRepository from "../repositories/user.repository.js";
+import RoleRepository from "../repositories/role.repository.js";
 
 /**
  * Service to handle Authentication logic
@@ -87,4 +87,4 @@ const AuthService = {
     }
 };
 
-module.exports = AuthService;
+export default AuthService;

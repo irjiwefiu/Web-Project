@@ -3,6 +3,7 @@ const AssignmentController = require("../controllers/assignment.controller");
 const { authenticateUser } = require("../middlewares/auth.middleware");
 const { authorizeRoles } = require("../middlewares/role.middleware");
 const { validateRequestBody } = require("../middlewares/validation.middleware");
+const { de } = require("date-fns/locale");
 
 const router = express.Router();
 
@@ -60,4 +61,4 @@ router.get(
     AssignmentController.getTechnicianAssignmentsController
 );
 
-module.exports = router;
+export default router;

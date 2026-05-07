@@ -73,4 +73,4 @@ router.delete(
     UserController.deleteUserController
 );
 
-module.exports = router;
+export default router;

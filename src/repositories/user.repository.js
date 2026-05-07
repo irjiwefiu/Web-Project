@@ -1,6 +1,6 @@
 // src/repositories/user.repository.js
-const { AppDataSource } = require("../config/data-source");
-const User = require("../entities/User");
+import AppDataSource from "../config/data-source.js";
+import User from "../entities/User.js";
 
 const UserRepository = AppDataSource.getRepository(User).extend({
     
@@ -49,4 +49,4 @@ const UserRepository = AppDataSource.getRepository(User).extend({
     }
 });
 
-module.exports = UserRepository;
+export default UserRepository;

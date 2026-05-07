@@ -37,4 +37,4 @@ router.get(
     DashboardController.getCustomerReviews
 );
 
-module.exports = router;
+export default router;

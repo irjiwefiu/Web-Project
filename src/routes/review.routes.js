@@ -83,4 +83,4 @@ router.delete(
     ReviewController.deleteReviewController
 );
 
-module.exports = router;
+export default router;

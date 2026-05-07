@@ -46,4 +46,4 @@ router.get(
     DashboardController.getTechnicianProfile
 );
 
-module.exports = router;
+export default router;

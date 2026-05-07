@@ -1,5 +1,5 @@
-const { AppDataSource } = require("../config/data-source");
-const Review = require("../entities/Review");
+import AppDataSource from "../config/data-source.js";
+import Review from "../entities/Review";
 
 const ReviewRepository = AppDataSource.getRepository(Review).extend({
     
@@ -57,4 +57,4 @@ const ReviewRepository = AppDataSource.getRepository(Review).extend({
     }
 });
 
-module.exports = ReviewRepository;
+export default ReviewRepository;

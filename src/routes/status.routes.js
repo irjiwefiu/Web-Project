@@ -46,4 +46,4 @@ router.get(
     StatusController.getServiceStatusHistoryController
 );
 
-module.exports = router;
+export default router;

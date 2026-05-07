@@ -1,6 +1,6 @@
 // src/repositories/serviceRequest.repository.js
-const { AppDataSource } = require("../config/data-source");
-const ServiceRequest = require("../entities/ServiceRequest");
+import AppDataSource from "../config/data-source.js";
+import ServiceRequest from "../entities/ServiceRequest";
 const { Between, ILike } = require("typeorm");
 
 const ServiceRequestRepository = AppDataSource.getRepository(ServiceRequest).extend({
@@ -91,4 +91,4 @@ const ServiceRequestRepository = AppDataSource.getRepository(ServiceRequest).ext
     }
 });
 
-module.exports = ServiceRequestRepository;
+export default ServiceRequestRepository;

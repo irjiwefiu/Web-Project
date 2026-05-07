@@ -1,6 +1,6 @@
 // src/repositories/technician.repository.js
-const { AppDataSource } = require("../config/data-source");
-const TechnicianProfile = require("../entities/TechnicianProfile");
+import AppDataSource from "../config/data-source.js";
+import TechnicianProfile from ("../entities/TechnicianProfile");
 
 const TechnicianRepository = AppDataSource.getRepository(TechnicianProfile).extend({
     
@@ -51,4 +51,4 @@ const TechnicianRepository = AppDataSource.getRepository(TechnicianProfile).exte
     }
 });
 
-module.exports = TechnicianRepository;
+export default TechnicianRepository;

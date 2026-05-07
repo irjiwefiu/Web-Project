@@ -102,4 +102,4 @@ router.get(
     TechnicianController.getTechnicianRatingController
 );
 
-module.exports = router;
+export default router;

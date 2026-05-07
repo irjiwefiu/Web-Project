@@ -1,11 +1,11 @@
 import express from "express";
 import dotenv from "dotenv";
 import "reflect-metadata";
-import { AppDataSource } from "./config/data-source.js";
+import  AppDataSource  from "./config/data-source.js";
 
 // Import middlewares
-import { errorMiddleware } from "./middlewares/error.middleware.js";
-import { requestLogger } from "./middlewares/requestLogger.middleware.js";
+import  errorMiddleware  from "./middlewares/error.middleware.js";
+import  requestLogger  from "./middlewares/requestLogger.middleware.js";
 
 // Import routes
 import authRoutes from "./routes/auth.routes.js";
