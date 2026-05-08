@@ -96,19 +96,29 @@ export default function UserManagement() {
       cell: ({ getValue }) => <span className="text-gray-600">{getValue()}</span>,
     },
     {
-      accessorKey: 'role',
+      id: 'role',
+      accessorFn: (row) => row.role?.name || 'N/A',
       header: 'Role',
       cell: ({ getValue }) => {
-        const role = typeof getValue() === 'object' ? getValue()?.name : getValue()
-        return <span className="badge badge-info capitalize">{role || 'N/A'}</span>
+        const roleColors = {
+          admin: 'bg-red-100 text-red-700',
+          technician: 'bg-blue-100 text-blue-700',
+          customer: 'bg-green-100 text-green-700',
+        }
+        const r = getValue()
+        return (
+          <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold capitalize ${roleColors[r] || 'bg-gray-100 text-gray-700'}`}>
+            {r}
+          </span>
+        )
       },
     },
     {
-      accessorKey: 'createdAt',
+      accessorKey: 'created_at',
       header: 'Joined',
       cell: ({ getValue }) => (
         <span className="text-gray-600">
-          {getValue() ? new Date(getValue()).toLocaleDateString() : 'N/A'}
+          {getValue() ? new Date(getValue()).toLocaleDateString() : '—'}
         </span>
       ),
     },

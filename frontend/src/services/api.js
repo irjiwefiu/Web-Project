@@ -48,6 +48,7 @@ export const userAPI = {
   getAllUsers: () => fetchAPI('/users'),
   createUser: (body) => fetchAPI('/users', { method: 'POST', body: JSON.stringify(body) }),
   getUsersByRole: (role) => fetchAPI(`/users/role/${role}`),
+  updateUser: (id, body) => fetchAPI(`/users/${id}`, { method: 'PATCH', body: JSON.stringify(body) }),
   deleteUser: (id) => fetchAPI(`/users/${id}`, { method: 'DELETE' }),
 }
 
@@ -83,9 +84,11 @@ export const requestAPI = {
 // Assignment API
 export const assignmentAPI = {
   create: (body) => fetchAPI('/assignments', { method: 'POST', body: JSON.stringify(body) }),
+  adminAssign: (body) => fetchAPI('/assignments/admin/assign', { method: 'POST', body: JSON.stringify(body) }),
   reassign: (id, body) => fetchAPI(`/assignments/${id}/reassign`, { method: 'PATCH', body: JSON.stringify(body) }),
   getByRequest: (requestId) => fetchAPI(`/assignments/request/${requestId}`),
   getByTechnician: (techId) => fetchAPI(`/assignments/technician/${techId}`),
+  getApplications: (requestId) => fetchAPI(`/assignments/request/${requestId}/applications`),
 }
 
 // Status API

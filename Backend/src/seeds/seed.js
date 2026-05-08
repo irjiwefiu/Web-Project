@@ -19,9 +19,29 @@ import {
   reviews,
 } from "./seedData.js";
 
+async function ensureColumns(manager) {
+  // Add name column to users if it doesn't exist
+  await manager.query(`
+    ALTER TABLE users
+      ADD COLUMN IF NOT EXISTS name VARCHAR,
+      ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT now();
+  `);
+  // Add extra technician_profiles columns if they don't exist
+  await manager.query(`
+    ALTER TABLE technician_profiles
+      ADD COLUMN IF NOT EXISTS availability_status VARCHAR DEFAULT 'offline',
+      ADD COLUMN IF NOT EXISTS rating FLOAT DEFAULT 0,
+      ADD COLUMN IF NOT EXISTS total_jobs INT DEFAULT 0,
+      ADD COLUMN IF NOT EXISTS service_area VARCHAR;
+  `);
+}
+
 async function seed() {
   const dataSource = await AppDataSource.initialize();
   const manager = dataSource.manager;
+
+  console.log("Ensuring schema columns exist...");
+  await ensureColumns(manager);
 
   console.log("Clearing existing seed data...");
   await manager.query(
@@ -30,7 +50,6 @@ async function seed() {
 
   console.log("Seeding roles...");
   const createdRoles = await manager.save(Role, roles);
-
   const roleMap = new Map(createdRoles.map((role) => [role.name, role]));
 
   console.log("Seeding users...");
@@ -46,7 +65,6 @@ async function seed() {
     });
     createdUsers.push(user);
   }
-
   const userMap = new Map(createdUsers.map((user) => [user.email, user]));
 
   console.log("Seeding technician profiles...");
@@ -54,13 +72,18 @@ async function seed() {
     await manager.save(TechnicianProfile, {
       bio: profileData.bio,
       skills: profileData.skills,
+      availability_status: profileData.availability_status || "available",
+      rating: profileData.rating || 0,
+      total_jobs: profileData.total_jobs || 0,
       user: userMap.get(profileData.userEmail),
     });
   }
 
   console.log("Seeding categories...");
   const createdCategories = await manager.save(ServiceCategory, categories);
-  const categoryMap = new Map(createdCategories.map((category) => [category.name, category]));
+  const categoryMap = new Map(
+    createdCategories.map((cat) => [cat.name, cat])
+  );
 
   console.log("Seeding service requests...");
   const createdRequests = [];
@@ -73,8 +96,9 @@ async function seed() {
     });
     createdRequests.push(request);
   }
-
-  const requestMap = new Map(createdRequests.map((request) => [request.title, request]));
+  const requestMap = new Map(
+    createdRequests.map((request) => [request.title, request])
+  );
 
   console.log("Seeding assignments...");
   for (const assignmentData of assignments) {
@@ -105,7 +129,15 @@ async function seed() {
     });
   }
 
-  console.log("Seed data successfully inserted.");
+  console.log("\n✅ Seed data successfully inserted!");
+  console.log(`   Roles: ${roles.length}`);
+  console.log(`   Users: ${users.length}`);
+  console.log(`   Categories: ${categories.length}`);
+  console.log(`   Service Requests: ${serviceRequests.length}`);
+  console.log(`   Assignments: ${assignments.length}`);
+  console.log(`   Status History: ${statusHistory.length}`);
+  console.log(`   Reviews: ${reviews.length}`);
+
   await dataSource.destroy();
 }
 

@@ -13,6 +13,8 @@ import CustomerRequests from './pages/CustomerRequests'
 import FindTechnicians from './pages/FindTechnicians'
 import UserManagement from './pages/UserManagement'
 import RequestManagement from './pages/RequestManagement'
+import CategoryManagement from './pages/CategoryManagement'
+import TechnicianManagement from './pages/TechnicianManagement'
 import UserProfile from './pages/UserProfile'
 import NotFound from './pages/NotFound'
 
@@ -24,7 +26,7 @@ export default function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
 
-        {/* Admin Routes - role-based */}
+        {/* ── Admin Routes ────────────────────────────── */}
         <Route
           path="/dashboard/admin"
           element={
@@ -49,8 +51,24 @@ export default function App() {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/admin/technicians"
+          element={
+            <ProtectedRoute allowedRoles={['admin']}>
+              <Layout><TechnicianManagement /></Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/categories"
+          element={
+            <ProtectedRoute allowedRoles={['admin']}>
+              <Layout><CategoryManagement /></Layout>
+            </ProtectedRoute>
+          }
+        />
 
-        {/* Customer Routes - role-based */}
+        {/* ── Customer Routes ─────────────────────────── */}
         <Route
           path="/dashboard/customer"
           element={
@@ -76,7 +94,7 @@ export default function App() {
           }
         />
 
-        {/* Technician Routes - role-based */}
+        {/* ── Technician Routes ───────────────────────── */}
         <Route
           path="/dashboard/technician"
           element={
@@ -86,7 +104,7 @@ export default function App() {
           }
         />
 
-        {/* Profile - accessible by all authenticated */}
+        {/* ── Shared Routes ───────────────────────────── */}
         <Route
           path="/profile"
           element={

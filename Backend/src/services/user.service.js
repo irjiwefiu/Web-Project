@@ -51,7 +51,7 @@ const UserService = {
      * Usually reserved for Admin dashboards.
      */
     async getAllUsers() {
-        const users = await UserRepository.find(); // Assuming base TypeORM find or custom repo method
+        const users = await UserRepository.findAll(); // loads role + technician_profile
         return users.map(({ password, ...user }) => user);
     },
 

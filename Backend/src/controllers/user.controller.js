@@ -120,6 +120,26 @@ const UserController = {
         } catch (error) {
             next(error);
         }
+    },
+
+    /**
+     * updateAnyUserController
+     * PATCH /users/:id
+     * Protected: Admin only — updates any user by param ID
+     */
+    async updateAnyUserController(req, res, next) {
+        try {
+            const { id } = req.params;
+            const updatedUser = await UserService.updateUserProfile(id, req.body);
+            
+            return res.status(200).json({
+                success: true,
+                message: "User updated successfully.",
+                data: updatedUser
+            });
+        } catch (error) {
+            next(error);
+        }
     }
 };
 

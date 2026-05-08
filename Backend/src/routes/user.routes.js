@@ -86,4 +86,17 @@ router.delete(
     UserController.deleteUserController
 );
 
+/**
+ * PATCH /users/:id
+ * Update a user by ID
+ * Protected: Admin only
+ */
+router.patch(
+    "/:id",
+    authenticateUser,
+    authorizeRoles("admin"),
+    validateRequestBody,
+    UserController.updateAnyUserController
+);
+
 export default router;

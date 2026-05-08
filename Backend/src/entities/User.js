@@ -8,7 +8,8 @@ const User = new EntitySchema({
     name: { type: "varchar", nullable: true },
     username: { type: "varchar", nullable: true },
     email: { type: "varchar", unique: true },
-    password: { type: "varchar" }
+    password: { type: "varchar" },
+    created_at: { type: "timestamp", createDate: true, nullable: true }
   },
   relations: {
     role: {
