@@ -5,8 +5,10 @@ const User = new EntitySchema({
   tableName: "users",
   columns: {
     id: { primary: true, type: "int", generated: true },
-    username: { type: "varchar" },
-    email: { type: "varchar", unique: true }
+    name: { type: "varchar", nullable: true },
+    username: { type: "varchar", nullable: true },
+    email: { type: "varchar", unique: true },
+    password: { type: "varchar" }
   },
   relations: {
     role: {

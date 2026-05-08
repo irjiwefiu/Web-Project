@@ -42,6 +42,12 @@ const UserRepository = AppDataSource.getRepository(User).extend({
         return this.findUserById(id); // Return the updated user object
     },
 
+    async findAll() {
+        return await this.find({
+            relations: ["role", "technician_profile"]
+        });
+    },
+
     // 6. Delete User
     async deleteUser(id) {
         const result = await this.delete(id);

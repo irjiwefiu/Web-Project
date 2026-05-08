@@ -1,7 +1,7 @@
 export const roles = [
-  { name: "Admin" },
-  { name: "Technician" },
-  { name: "Customer" },
+  { name: "admin" },
+  { name: "technician" },
+  { name: "customer" },
 ];
 
 export const categories = [
@@ -12,11 +12,11 @@ export const categories = [
 ];
 
 export const users = [
-  { username: "admin", email: "admin@example.com", roleName: "Admin" },
-  { username: "tech_john", email: "tech.john@example.com", roleName: "Technician" },
-  { username: "tech_emily", email: "tech.emily@example.com", roleName: "Technician" },
-  { username: "alice", email: "alice@example.com", roleName: "Customer" },
-  { username: "bob", email: "bob@example.com", roleName: "Customer" },
+  { name: "Admin User", username: "admin", email: "admin@example.com", password: "admin123", roleName: "admin" },
+  { name: "John Smith", username: "tech_john", email: "tech.john@example.com", password: "tech123", roleName: "technician" },
+  { name: "Emily Davis", username: "tech_emily", email: "tech.emily@example.com", password: "tech123", roleName: "technician" },
+  { name: "Alice Johnson", username: "alice", email: "alice@example.com", password: "customer123", roleName: "customer" },
+  { name: "Bob Williams", username: "bob", email: "bob@example.com", password: "customer123", roleName: "customer" },
 ];
 
 export const technicianProfiles = [

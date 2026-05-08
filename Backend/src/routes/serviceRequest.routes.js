@@ -36,42 +36,6 @@ router.get(
 );
 
 /**
- * GET /requests/:id
- * Get a specific service request by ID
- * Protected: authenticateUser
- */
-router.get(
-    "/:id",
-    authenticateUser,
-    ServiceRequestController.getServiceRequestByIdController
-);
-
-/**
- * PATCH /requests/:id
- * Update a service request
- * Protected: Customer only (can update own request)
- */
-router.patch(
-    "/:id",
-    authenticateUser,
-    authorizeRoles("customer"),
-    validateRequestBody,
-    ServiceRequestController.updateServiceRequestController
-);
-
-/**
- * PATCH /requests/:id/cancel
- * Cancel a service request
- * Protected: Customer only
- */
-router.patch(
-    "/:id/cancel",
-    authenticateUser,
-    authorizeRoles("customer"),
-    ServiceRequestController.cancelServiceRequestController
-);
-
-/**
  * GET /requests/customer/me
  * Get all service requests for the logged-in customer
  * Protected: authenticateUser, Customer only
@@ -107,6 +71,42 @@ router.get(
     authenticateUser,
     authorizeRoles("admin"),
     ServiceRequestController.searchServiceRequestsController
+);
+
+/**
+ * PATCH /requests/:id/cancel
+ * Cancel a service request
+ * Protected: Customer only
+ */
+router.patch(
+    "/:id/cancel",
+    authenticateUser,
+    authorizeRoles("customer"),
+    ServiceRequestController.cancelServiceRequestController
+);
+
+/**
+ * GET /requests/:id
+ * Get a specific service request by ID
+ * Protected: authenticateUser
+ */
+router.get(
+    "/:id",
+    authenticateUser,
+    ServiceRequestController.getServiceRequestByIdController
+);
+
+/**
+ * PATCH /requests/:id
+ * Update a service request
+ * Protected: Customer only (can update own request)
+ */
+router.patch(
+    "/:id",
+    authenticateUser,
+    authorizeRoles("customer"),
+    validateRequestBody,
+    ServiceRequestController.updateServiceRequestController
 );
 
 export default router;

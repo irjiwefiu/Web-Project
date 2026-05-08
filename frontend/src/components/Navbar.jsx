@@ -1,16 +1,17 @@
-import React, { useState, useEffect } from 'react'
+import React from 'react'
 import { FiMenu, FiLogOut, FiUser, FiBell } from 'react-icons/fi'
-import { useAuthStore, useUIStore } from '../store'
+import { useSelector, useDispatch } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
+import { logout } from '../store/slices/authSlice'
+import { toggleSidebar } from '../store/slices/uiSlice'
 
 export default function Navbar() {
-  const user = useAuthStore((state) => state.user)
-  const logout = useAuthStore((state) => state.logout)
-  const toggleSidebar = useUIStore((state) => state.toggleSidebar)
+  const user = useSelector((state) => state.auth.user)
+  const dispatch = useDispatch()
   const navigate = useNavigate()
 
   const handleLogout = () => {
-    logout()
+    dispatch(logout())
     navigate('/login')
   }
 
@@ -20,7 +21,7 @@ export default function Navbar() {
         {/* Left */}
         <div className="flex items-center gap-4">
           <button
-            onClick={toggleSidebar}
+            onClick={() => dispatch(toggleSidebar())}
             className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
           >
             <FiMenu className="w-6 h-6 text-gray-600" />

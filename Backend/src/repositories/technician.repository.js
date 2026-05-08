@@ -11,6 +11,10 @@ const TechnicianRepository = AppDataSource.getRepository(TechnicianProfile).exte
         return await this.save(profile);
     },
 
+    async findByUserId(userId) {
+        return await this.findTechnicianProfileByUserId(userId);
+    },
+
     // 2. Find Profile By User ID
     async findTechnicianProfileByUserId(userId) {
         return await this.findOne({

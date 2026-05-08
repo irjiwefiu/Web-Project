@@ -1,4 +1,5 @@
 import AppDataSource from "../config/data-source.js";
+import bcrypt from "bcrypt";
 import Role from "../entities/Role.js";
 import User from "../entities/User.js";
 import TechnicianProfile from "../entities/TechnicianProfile.js";
@@ -35,9 +36,12 @@ async function seed() {
   console.log("Seeding users...");
   const createdUsers = [];
   for (const userData of users) {
+    const hashedPassword = await bcrypt.hash(userData.password, 10);
     const user = await manager.save(User, {
+      name: userData.name,
       username: userData.username,
       email: userData.email,
+      password: hashedPassword,
       role: roleMap.get(userData.roleName),
     });
     createdUsers.push(user);

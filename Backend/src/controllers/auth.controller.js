@@ -21,7 +21,9 @@ const AuthController = {
                 data: {
                     id: newUser.id,
                     name: newUser.name,
-                    email: newUser.email
+                    username: newUser.username,
+                    email: newUser.email,
+                    role: newUser.role?.name
                 }
             });
         } catch (error) {
@@ -48,6 +50,7 @@ const AuthController = {
                     user: {
                         id: result.user.id,
                         name: result.user.name,
+                        username: result.user.username,
                         email: result.user.email,
                         role: result.user.role?.name
                     },

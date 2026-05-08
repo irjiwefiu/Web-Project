@@ -38,6 +38,19 @@ router.patch(
  */
 
 /**
+ * POST /users
+ * Create a new user
+ * Protected: Admin only
+ */
+router.post(
+    "/",
+    authenticateUser,
+    authorizeRoles("admin"),
+    validateRequestBody,
+    UserController.createUserController
+);
+
+/**
  * GET /users
  * Get all users
  * Protected: Admin only

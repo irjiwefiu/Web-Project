@@ -1,10 +1,10 @@
 import React from 'react'
+import { useSelector } from 'react-redux'
 import Navbar from './Navbar'
 import Sidebar from './Sidebar'
-import { useAuthStore } from '../store'
 
 export default function Layout({ children }) {
-  const user = useAuthStore((state) => state.user)
+  const user = useSelector((state) => state.auth.user)
 
   if (!user) return null
 

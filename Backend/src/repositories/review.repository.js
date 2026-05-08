@@ -46,6 +46,22 @@ const ReviewRepository = AppDataSource.getRepository(Review).extend({
         return await this.delete(reviewId);
     },
 
+    async findByCustomerId(customerId) {
+        return await this.getReviewsByCustomer(customerId);
+    },
+
+    async findByTechnicianId(technicianId) {
+        return await this.getReviewsByTechnician(technicianId);
+    },
+
+    async getAverageRating() {
+        const result = await this.createQueryBuilder("review")
+            .select("AVG(review.rating)", "average")
+            .getRawOne();
+
+        return parseFloat(result.average) || 0.0;
+    },
+
     // Existing: Calculate average rating
     async getTechnicianRating(technicianId) {
         const result = await this.createQueryBuilder("review")

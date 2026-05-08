@@ -9,7 +9,7 @@ function RequestForm({ onSubmit, onClose }) {
     description: '',
     categoryId: '',
     location: '',
-    preferredDate: '',
+    preferred_time: '',
     urgency: 'medium',
   })
 
@@ -48,113 +48,49 @@ function RequestForm({ onSubmit, onClose }) {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1">
-              Title
-            </label>
-            <input
-              type="text"
-              className="input"
-              placeholder="Service title"
-              value={formData.title}
-              onChange={(e) =>
-                setFormData((prev) => ({ ...prev, title: e.target.value }))
-              }
-              required
-            />
+            <label className="block text-sm font-semibold text-gray-700 mb-1">Title</label>
+            <input type="text" className="input" placeholder="Service title" value={formData.title}
+              onChange={(e) => setFormData((prev) => ({ ...prev, title: e.target.value }))} required />
           </div>
-
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1">
-              Description
-            </label>
-            <textarea
-              className="input"
-              placeholder="Describe your issue..."
-              rows="3"
-              value={formData.description}
-              onChange={(e) =>
-                setFormData((prev) => ({ ...prev, description: e.target.value }))
-              }
-              required
-            />
+            <label className="block text-sm font-semibold text-gray-700 mb-1">Description</label>
+            <textarea className="input" placeholder="Describe your issue..." rows="3" value={formData.description}
+              onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))} required />
           </div>
-
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1">
-              Category
-            </label>
-            <select
-              className="input"
-              value={formData.categoryId}
-              onChange={(e) =>
-                setFormData((prev) => ({ ...prev, categoryId: e.target.value }))
-              }
-              required
-            >
+            <label className="block text-sm font-semibold text-gray-700 mb-1">Category</label>
+            <select className="input" value={formData.categoryId}
+              onChange={(e) => setFormData((prev) => ({ ...prev, categoryId: e.target.value }))} required>
               <option value="">Select category</option>
               {categories.map((cat) => (
-                <option key={cat.id} value={cat.id}>
-                  {cat.name}
-                </option>
+                <option key={cat.id} value={cat.id}>{cat.name}</option>
               ))}
             </select>
           </div>
-
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1">
-              Location
-            </label>
-            <input
-              type="text"
-              className="input"
-              placeholder="Service location"
-              value={formData.location}
-              onChange={(e) =>
-                setFormData((prev) => ({ ...prev, location: e.target.value }))
-              }
-              required
-            />
+            <label className="block text-sm font-semibold text-gray-700 mb-1">Location</label>
+            <input type="text" className="input" placeholder="Service location" value={formData.location}
+              onChange={(e) => setFormData((prev) => ({ ...prev, location: e.target.value }))} required />
           </div>
-
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">
-                Preferred Date
-              </label>
-              <input
-                type="date"
-                className="input"
-                value={formData.preferredDate}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, preferredDate: e.target.value }))
-                }
-              />
+              <label className="block text-sm font-semibold text-gray-700 mb-1">Preferred Date</label>
+              <input type="date" className="input" value={formData.preferred_time}
+                onChange={(e) => setFormData((prev) => ({ ...prev, preferred_time: e.target.value }))} />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">
-                Urgency
-              </label>
-              <select
-                className="input"
-                value={formData.urgency}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, urgency: e.target.value }))
-                }
-              >
+              <label className="block text-sm font-semibold text-gray-700 mb-1">Urgency</label>
+              <select className="input" value={formData.urgency}
+                onChange={(e) => setFormData((prev) => ({ ...prev, urgency: e.target.value }))}>
                 <option value="low">Low</option>
                 <option value="medium">Medium</option>
                 <option value="high">High</option>
               </select>
             </div>
           </div>
-
           <div className="flex gap-3 pt-4">
-            <button type="button" onClick={onClose} className="btn-secondary flex-1">
-              Cancel
-            </button>
-            <button type="submit" className="btn-primary flex-1">
-              Create Request
-            </button>
+            <button type="button" onClick={onClose} className="btn-secondary flex-1">Cancel</button>
+            <button type="submit" className="btn-primary flex-1">Create Request</button>
           </div>
         </form>
       </div>
@@ -182,6 +118,15 @@ export default function CustomerRequests() {
     }
   }
 
+  const cancelRequest = async (requestId) => {
+    try {
+      await requestAPI.cancel(requestId, { reason: 'Cancelled by customer' })
+      await loadRequests()
+    } catch (error) {
+      console.error('Failed to cancel request:', error)
+    }
+  }
+
   const handleCreateRequest = () => {
     loadRequests()
     setShowForm(false)
@@ -195,12 +140,8 @@ export default function CustomerRequests() {
           <h1 className="text-3xl font-bold text-gray-900">My Service Requests</h1>
           <p className="text-gray-600 mt-2">Track all your service bookings</p>
         </div>
-        <button
-          onClick={() => setShowForm(true)}
-          className="btn-primary flex items-center gap-2"
-        >
-          <FiPlus className="w-5 h-5" />
-          New Request
+        <button onClick={() => setShowForm(true)} className="btn-primary flex items-center gap-2">
+          <FiPlus className="w-5 h-5" /> New Request
         </button>
       </div>
 
@@ -217,36 +158,27 @@ export default function CustomerRequests() {
                   <p className="text-gray-600 mt-2">{request.description}</p>
                   <div className="flex items-center gap-4 mt-4 text-sm text-gray-600">
                     <div className="flex items-center gap-1">
-                      <FiMapPin className="w-4 h-4" />
-                      {request.location}
+                      <FiMapPin className="w-4 h-4" /> {request.location}
                     </div>
                     <div className="flex items-center gap-1">
-                      <FiClock className="w-4 h-4" />
-                      {new Date(request.createdAt).toLocaleDateString()}
+                      <FiClock className="w-4 h-4" /> {new Date(request.createdAt || request.created_at).toLocaleDateString()}
                     </div>
                   </div>
                 </div>
                 <div className="text-right">
-                  <span
-                    className={`badge ${
-                      request.status === 'pending'
-                        ? 'badge-info'
-                        : request.status === 'in_progress'
-                        ? 'badge-warning'
-                        : 'badge-success'
-                    }`}
-                  >
-                    {request.status}
-                  </span>
-                  <p className="text-sm text-gray-600 mt-2 capitalize">
-                    Urgency: {request.urgency}
-                  </p>
+                  <span className={`badge ${
+                    request.status === 'pending' || request.status === 'requested' || request.status === 'assigned' ? 'badge-info'
+                      : request.status === 'in_progress' ? 'badge-warning'
+                      : request.status === 'completed' ? 'badge-success'
+                      : 'badge'
+                  }`}>{request.status?.replace('_', ' ')}</span>
+                  <p className="text-sm text-gray-600 mt-2 capitalize">Urgency: {request.urgency}</p>
                 </div>
               </div>
               <div className="mt-4 flex gap-2">
                 <button className="btn-secondary text-sm">View Details</button>
-                {request.status === 'pending' && (
-                  <button className="btn-secondary text-sm">Cancel</button>
+                {(request.status === 'pending' || request.status === 'requested') && (
+                  <button onClick={() => cancelRequest(request.id)} className="btn-secondary text-sm">Cancel</button>
                 )}
               </div>
             </div>
@@ -256,10 +188,7 @@ export default function CustomerRequests() {
         <div className="card text-center py-12">
           <FiSearch className="w-12 h-12 text-gray-400 mx-auto mb-4" />
           <p className="text-gray-600">No requests yet</p>
-          <button
-            onClick={() => setShowForm(true)}
-            className="btn-primary mt-4"
-          >
+          <button onClick={() => setShowForm(true)} className="btn-primary mt-4">
             Create Your First Request
           </button>
         </div>
@@ -267,10 +196,7 @@ export default function CustomerRequests() {
 
       {/* Modal */}
       {showForm && (
-        <RequestForm
-          onSubmit={handleCreateRequest}
-          onClose={() => setShowForm(false)}
-        />
+        <RequestForm onSubmit={handleCreateRequest} onClose={() => setShowForm(false)} />
       )}
     </div>
   )

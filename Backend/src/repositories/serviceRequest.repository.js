@@ -27,6 +27,22 @@ const ServiceRequestRepository = AppDataSource.getRepository(ServiceRequest).ext
         });
     },
 
+    async findAll() {
+        return await this.getAllServiceRequests();
+    },
+
+    async findByStatus(status) {
+        return await this.find({
+            where: { status },
+            relations: ["customer", "category", "status_history"],
+            order: { id: "DESC" }
+        });
+    },
+
+    async findByCustomerId(customerId) {
+        return await this.getServiceRequestsByCustomer(customerId);
+    },
+
     // 4. Get by Customer
     async getServiceRequestsByCustomer(customerId) {
         return await this.find({

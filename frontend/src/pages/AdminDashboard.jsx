@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react'
-import { FiTrendingUp, FiUsers, FiCheckCircle, FiClock, FiStar } from 'react-icons/fi'
+import { FiTrendingUp, FiUsers, FiCheckCircle, FiClock, FiStar, FiClipboard } from 'react-icons/fi'
+import { useSelector } from 'react-redux'
+import { useNavigate } from 'react-router-dom'
 import { dashboardAPI } from '../services/api'
 
 function StatCard({ icon: Icon, label, value, color }) {
@@ -19,6 +21,8 @@ function StatCard({ icon: Icon, label, value, color }) {
 export default function AdminDashboard() {
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
+  const user = useSelector((state) => state.auth.user)
+  const navigate = useNavigate()
 
   useEffect(() => {
     fetchDashboard()
@@ -46,41 +50,16 @@ export default function AdminDashboard() {
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
-        <p className="text-gray-600 mt-2">System overview and management</p>
+        <p className="text-gray-600 mt-2">Welcome back, {user?.name}. System overview and management</p>
       </div>
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
-        <StatCard
-          icon={FiUsers}
-          label="Total Users"
-          value={stats.totalUsers || 0}
-          color="bg-blue-500"
-        />
-        <StatCard
-          icon={FiClipboard}
-          label="Service Requests"
-          value={stats.activeServiceRequests || 0}
-          color="bg-yellow-500"
-        />
-        <StatCard
-          icon={FiCheckCircle}
-          label="Assignments"
-          value={stats.totalAssignments || 0}
-          color="bg-green-500"
-        />
-        <StatCard
-          icon={FiTrendingUp}
-          label="Avg Rating"
-          value={`${stats.averageRating || 0}★`}
-          color="bg-purple-500"
-        />
-        <StatCard
-          icon={FiClock}
-          label="Pending"
-          value={stats.pending || 0}
-          color="bg-red-500"
-        />
+        <StatCard icon={FiUsers} label="Total Users" value={stats.totalUsers || 0} color="bg-blue-500" />
+        <StatCard icon={FiClipboard} label="Service Requests" value={stats.activeServiceRequests || 0} color="bg-yellow-500" />
+        <StatCard icon={FiCheckCircle} label="Assignments" value={stats.totalAssignments || 0} color="bg-green-500" />
+        <StatCard icon={FiTrendingUp} label="Avg Rating" value={`${stats.averageRating || 0}★`} color="bg-purple-500" />
+        <StatCard icon={FiClock} label="Pending" value={stats.pending || 0} color="bg-red-500" />
       </div>
 
       {/* Main Content Grid */}
@@ -89,31 +68,30 @@ export default function AdminDashboard() {
         <div className="card">
           <h2 className="text-lg font-bold text-gray-900 mb-4">Recent Activity</h2>
           <div className="space-y-4">
-            {[1, 2, 3, 4, 5].map((i) => (
-              <div
-                key={i}
-                className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
-              >
+          {data?.recentRequests?.length > 0 ? (
+            data.recentRequests.map((request) => (
+              <div key={request.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 bg-gray-50 rounded-lg">
                 <div>
-                  <p className="text-sm font-semibold text-gray-900">
-                    New service request
-                  </p>
-                  <p className="text-xs text-gray-600">2 minutes ago</p>
+                  <p className="text-sm font-semibold text-gray-900">{request.title || 'New service request'}</p>
+                  <p className="text-xs text-gray-600">{new Date(request.created_at || request.createdAt || Date.now()).toLocaleString()}</p>
                 </div>
-                <div className="badge badge-info">Pending</div>
+                <div className={`badge ${request.status === 'pending' ? 'badge-info' : request.status === 'in_progress' ? 'badge-warning' : 'badge-success'}`}>
+                  {request.status?.replace('_', ' ') || 'Pending'}
+                </div>
               </div>
-            ))}
+            ))
+          ) : (
+            <div className="p-4 bg-gray-50 rounded-lg text-gray-600">No recent activity yet</div>
+          )}
           </div>
         </div>
-
-        {/* Quick Links */}
         <div className="card">
           <h2 className="text-lg font-bold text-gray-900 mb-4">Quick Actions</h2>
           <div className="space-y-3">
-            <button className="btn-primary w-full text-left">View All Requests</button>
-            <button className="btn-secondary w-full text-left">Manage Users</button>
-            <button className="btn-secondary w-full text-left">Assign Technicians</button>
-            <button className="btn-secondary w-full text-left">Manage Categories</button>
+            <button onClick={() => navigate('/admin/requests')} className="btn-primary w-full text-left">View All Requests</button>
+            <button onClick={() => navigate('/admin/users')} className="btn-secondary w-full text-left">Manage Users</button>
+            <button onClick={() => navigate('/admin/requests')} className="btn-secondary w-full text-left">Assign Technicians</button>
+            <button onClick={() => navigate('/admin/requests')} className="btn-secondary w-full text-left">Manage Categories</button>
           </div>
         </div>
       </div>

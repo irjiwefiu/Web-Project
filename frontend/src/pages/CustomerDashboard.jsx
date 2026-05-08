@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react'
-import { FiClipboard, FiClock, FiCheckCircle, FiX } from 'react-icons/fi'
+import { FiClipboard, FiClock, FiCheckCircle } from 'react-icons/fi'
+import { useSelector } from 'react-redux'
+import { useNavigate } from 'react-router-dom'
 import { dashboardAPI } from '../services/api'
 
 function RequestCard({ request }) {
+  const status = request.status || 'requested'
   return (
     <div className="card">
       <div className="flex items-start justify-between mb-3">
@@ -12,14 +15,14 @@ function RequestCard({ request }) {
         </div>
         <span
           className={`badge ${
-            request.status === 'in_progress'
+            status === 'in_progress'
               ? 'badge-warning'
-              : request.status === 'completed'
+              : status === 'completed'
               ? 'badge-success'
               : 'badge-info'
           }`}
         >
-          {request.status}
+          {status.replace('_', ' ')}
         </span>
       </div>
       <div className="grid grid-cols-2 gap-3 text-sm text-gray-600 pt-3 border-t">
@@ -33,6 +36,8 @@ function RequestCard({ request }) {
 export default function CustomerDashboard() {
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
+  const user = useSelector((state) => state.auth.user)
+  const navigate = useNavigate()
 
   useEffect(() => {
     fetchDashboard()
@@ -61,7 +66,7 @@ export default function CustomerDashboard() {
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900">My Dashboard</h1>
-        <p className="text-gray-600 mt-2">Track your service requests</p>
+        <p className="text-gray-600 mt-2">Welcome, {user?.name}. Track your service requests</p>
       </div>
 
       {/* Quick Stats */}
@@ -109,7 +114,7 @@ export default function CustomerDashboard() {
 
       {/* Action Button */}
       <div className="mt-8 text-center">
-        <button className="btn-primary px-8 py-3">
+        <button onClick={() => navigate('/customer/requests')} className="btn-primary px-8 py-3">
           Create New Service Request
         </button>
       </div>

@@ -25,6 +25,26 @@ const UserController = {
         }
     },
 
+    async createUserController(req, res, next) {
+        try {
+            const newUser = await UserService.createUser(req.body);
+
+            return res.status(201).json({
+                success: true,
+                message: "User created successfully.",
+                data: {
+                    id: newUser.id,
+                    name: newUser.name,
+                    username: newUser.username,
+                    email: newUser.email,
+                    role: newUser.role?.name
+                }
+            });
+        } catch (error) {
+            next(error);
+        }
+    },
+
     /**
      * getAllUsersController
      * GET /users

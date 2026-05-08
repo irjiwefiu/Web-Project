@@ -10,7 +10,7 @@ const AuthService = {
     
     // 1. registerUser: Handles password hashing and role assignment
     async registerUser(userData) {
-        const { name, email, password, roleName } = userData;
+        const { name, username, email, password, roleName } = userData;
 
         // Check if user already exists
         const existingUser = await UserRepository.findUserByEmail(email);
@@ -18,10 +18,15 @@ const AuthService = {
             throw new Error("User with this email already exists");
         }
 
-        // Fetch the role (default to 'customer' if not provided)
-        const role = await RoleRepository.findRoleByName(roleName || "customer");
+        // Only allow public registration as a customer
+        if (roleName && roleName.toLowerCase() !== "customer") {
+            throw new Error("Only administrators can assign non-customer roles.");
+        }
+
+        // Always assign the customer role for public registration
+        const role = await RoleRepository.findRoleByName("customer");
         if (!role) {
-            throw new Error("Invalid role specified");
+            throw new Error("Customer role is not configured.");
         }
 
         // Hash password
@@ -31,9 +36,10 @@ const AuthService = {
         // Save user
         return await UserRepository.createUser({
             name,
+            username,
             email,
             password: hashedPassword,
-            role: role // Link the Role entity
+            role
         });
     },
 

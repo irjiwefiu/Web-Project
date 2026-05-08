@@ -5,6 +5,34 @@ import bcrypt from "bcrypt";
 const UserService = {
     
     /**
+     * createUser: Admin-only creation of users with optional role assignment.
+     */
+    async createUser(userData) {
+        const { name, username, email, password, roleName } = userData;
+
+        const existingUser = await UserRepository.findUserByEmail(email);
+        if (existingUser) {
+            throw new Error("User with this email already exists");
+        }
+
+        const role = await RoleRepository.findRoleByName(roleName || "customer");
+        if (!role) {
+            throw new Error("Invalid role specified");
+        }
+
+        const saltRounds = 10;
+        const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+        return await UserRepository.createUser({
+            name,
+            username,
+            email,
+            password: hashedPassword,
+            role
+        });
+    },
+
+    /**
      * getUserProfile: Fetches a user with their role and technician profile if applicable.
      */
     async getUserProfile(userId) {

@@ -1,15 +1,16 @@
 import React, { useState } from 'react'
 import { FiMail, FiLock, FiUser, FiArrowRight } from 'react-icons/fi'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
+import { useDispatch } from 'react-redux'
 import { authAPI } from '../services/api'
-import { useAuthStore } from '../store'
+import { loginSuccess, setError } from '../store/slices/authSlice'
 
 export default function Login() {
   const [formData, setFormData] = useState({ email: '', password: '' })
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
+  const [error, setLocalError] = useState('')
   const navigate = useNavigate()
-  const login = useAuthStore((state) => state.login)
+  const dispatch = useDispatch()
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -19,14 +20,14 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     setLoading(true)
-    setError('')
+    setLocalError('')
 
     try {
-      const { data } = await authAPI.login(formData)
-      login(data.user, data.token)
-      navigate(`/dashboard/${data.user.role}`)
+      const response = await authAPI.login(formData)
+      dispatch(loginSuccess({ user: response.data.user, token: response.data.token }))
+      navigate(`/dashboard/${response.data.user.role}`)
     } catch (err) {
-      setError(err.message || 'Login failed')
+      setLocalError(err.message || 'Login failed')
     } finally {
       setLoading(false)
     }
@@ -58,6 +59,7 @@ export default function Login() {
                 <input
                   type="email"
                   name="email"
+                  id="login-email"
                   value={formData.email}
                   onChange={handleChange}
                   className="input pl-10"
@@ -77,6 +79,7 @@ export default function Login() {
                 <input
                   type="password"
                   name="password"
+                  id="login-password"
                   value={formData.password}
                   onChange={handleChange}
                   className="input pl-10"
@@ -94,7 +97,7 @@ export default function Login() {
             )}
 
             {/* Submit */}
-            <button type="submit" disabled={loading} className="btn-primary w-full flex items-center justify-center gap-2">
+            <button type="submit" id="login-submit" disabled={loading} className="btn-primary w-full flex items-center justify-center gap-2">
               {loading ? 'Signing in...' : 'Sign In'}
               <FiArrowRight />
             </button>
@@ -110,9 +113,9 @@ export default function Login() {
           {/* Register Link */}
           <p className="text-center text-gray-600">
             Don't have an account?{' '}
-            <a href="/register" className="text-primary-600 font-semibold hover:text-primary-700">
+            <Link to="/register" className="text-primary-600 font-semibold hover:text-primary-700">
               Sign Up
-            </a>
+            </Link>
           </p>
         </div>
       </div>

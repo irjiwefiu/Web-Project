@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react'
 import { FiCheckCircle, FiStar, FiTrendingUp, FiClock } from 'react-icons/fi'
+import { useSelector } from 'react-redux'
 import { dashboardAPI } from '../services/api'
 
 export default function TechnicianDashboard() {
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
+  const user = useSelector((state) => state.auth.user)
 
   useEffect(() => {
     fetchDashboard()
@@ -33,7 +35,7 @@ export default function TechnicianDashboard() {
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900">Technician Dashboard</h1>
-        <p className="text-gray-600 mt-2">Manage your work and availability</p>
+        <p className="text-gray-600 mt-2">Welcome, {user?.name}. Manage your work and availability</p>
       </div>
 
       {/* Stats Grid */}
@@ -103,28 +105,46 @@ export default function TechnicianDashboard() {
         <h2 className="text-lg font-bold text-gray-900 mb-4">Upcoming Assignments</h2>
         {assignments.length > 0 ? (
           <div className="space-y-4">
-            {assignments.map((assignment) => (
-              <div key={assignment.id} className="card">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <h3 className="font-semibold text-gray-900">
-                      Assignment #{assignment.id.slice(0, 8)}
-                    </h3>
-                    <p className="text-sm text-gray-600 mt-1">
-                      Status: {assignment.status}
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      Scheduled: {assignment.scheduledDate}
-                    </p>
+            {assignments.map((assignment) => {
+              const request = assignment.request || {}
+              const scheduledDate = request.preferred_time ? new Date(request.preferred_time).toLocaleString() : 'Not scheduled'
+              const status = request.status || 'pending'
+              const statusClass = status === 'in_progress' ? 'badge-warning' : status === 'completed' ? 'badge-success' : 'badge-info'
+
+              return (
+                <div key={assignment.id} className="card">
+                  <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-gray-900">
+                        {request.title || `Assignment #${String(assignment.id).slice(0, 8)}`}
+                      </h3>
+                      <p className="text-sm text-gray-600 mt-1">
+                        {request.description || 'No description provided.'}
+                      </p>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4 text-sm text-gray-600">
+                        <div>
+                          <p className="font-semibold text-gray-900">Customer</p>
+                          <p>{request.customer?.name || 'Unknown'}</p>
+                        </div>
+                        <div>
+                          <p className="font-semibold text-gray-900">Scheduled</p>
+                          <p>{scheduledDate}</p>
+                        </div>
+                        <div>
+                          <p className="font-semibold text-gray-900">Urgency</p>
+                          <p className="capitalize">{request.urgency || 'medium'}</p>
+                        </div>
+                      </div>
+                    </div>
+                    <span className={`badge ${statusClass} uppercase`}>{status.replace('_', ' ')}</span>
                   </div>
-                  <span className="badge badge-info">{assignment.status}</span>
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    <button className="btn-secondary text-sm">View Details</button>
+                    <button className="btn-primary text-sm">Start Work</button>
+                  </div>
                 </div>
-                <div className="mt-4 flex gap-2">
-                  <button className="btn-secondary text-sm">View Details</button>
-                  <button className="btn-primary text-sm">Start Work</button>
-                </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         ) : (
           <div className="card text-center py-12">

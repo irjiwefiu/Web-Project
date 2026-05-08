@@ -36,6 +36,17 @@ const AssignmentRepository = AppDataSource.getRepository(Assignment).extend({
         });
     },
 
+    async findByTechnicianId(technicianId) {
+        return await this.getAssignmentsByTechnician(technicianId);
+    },
+
+    async findAll() {
+        return await this.find({
+            relations: ["request", "technician", "assigned_by"],
+            order: { assigned_at: "DESC" }
+        });
+    },
+
     // 5. Get the most recent accepted assignment for a request
     async getActiveAssignmentByRequest(requestId) {
         return await this.findOne({

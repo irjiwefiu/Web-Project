@@ -1,14 +1,14 @@
 import React, { useState } from 'react'
 import { FiMail, FiLock, FiUser, FiUserCheck, FiArrowRight } from 'react-icons/fi'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { authAPI } from '../services/api'
 
 export default function Register() {
   const [formData, setFormData] = useState({
     name: '',
+    username: '',
     email: '',
     password: '',
-    role: 'customer',
   })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -25,7 +25,10 @@ export default function Register() {
     setError('')
 
     try {
-      await authAPI.register(formData)
+      await authAPI.register({
+        ...formData,
+        roleName: 'customer',
+      })
       navigate('/login')
     } catch (err) {
       setError(err.message || 'Registration failed')
@@ -60,6 +63,7 @@ export default function Register() {
                 <input
                   type="text"
                   name="name"
+                  id="register-name"
                   value={formData.name}
                   onChange={handleChange}
                   className="input pl-10"
@@ -79,6 +83,7 @@ export default function Register() {
                 <input
                   type="email"
                   name="email"
+                  id="register-email"
                   value={formData.email}
                   onChange={handleChange}
                   className="input pl-10"
@@ -98,6 +103,7 @@ export default function Register() {
                 <input
                   type="password"
                   name="password"
+                  id="register-password"
                   value={formData.password}
                   onChange={handleChange}
                   className="input pl-10"
@@ -107,20 +113,24 @@ export default function Register() {
               </div>
             </div>
 
-            {/* Role */}
+            {/* Username */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
-                I am a:
+                Username
               </label>
-              <select
-                name="role"
-                value={formData.role}
-                onChange={handleChange}
-                className="input"
-              >
-                <option value="customer">Customer</option>
-                <option value="technician">Technician</option>
-              </select>
+              <div className="relative">
+                <FiUser className="absolute left-3 top-3 text-gray-400" />
+                <input
+                  type="text"
+                  name="username"
+                  id="register-username"
+                  value={formData.username}
+                  onChange={handleChange}
+                  className="input pl-10"
+                  placeholder="johndoe"
+                  required
+                />
+              </div>
             </div>
 
             {/* Error */}
@@ -131,7 +141,7 @@ export default function Register() {
             )}
 
             {/* Submit */}
-            <button type="submit" disabled={loading} className="btn-primary w-full flex items-center justify-center gap-2 mt-6">
+            <button type="submit" id="register-submit" disabled={loading} className="btn-primary w-full flex items-center justify-center gap-2 mt-6">
               {loading ? 'Creating account...' : 'Create Account'}
               <FiArrowRight />
             </button>
@@ -140,9 +150,9 @@ export default function Register() {
           {/* Login Link */}
           <p className="text-center text-gray-600 mt-6">
             Already have an account?{' '}
-            <a href="/login" className="text-primary-600 font-semibold hover:text-primary-700">
+            <Link to="/login" className="text-primary-600 font-semibold hover:text-primary-700">
               Sign In
-            </a>
+            </Link>
           </p>
         </div>
       </div>

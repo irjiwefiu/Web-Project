@@ -1,176 +1,106 @@
 import React, { useState, useEffect } from 'react'
-import { FiUser, FiMail, FiPhone, FiMapPin, FiEdit2, FiSave } from 'react-icons/fi'
-import { useAuthStore } from '../store'
+import { FiUser, FiMail, FiMapPin, FiSave } from 'react-icons/fi'
+import { useSelector } from 'react-redux'
 import { userAPI } from '../services/api'
 
 export default function UserProfile() {
-  const user = useAuthStore((state) => state.user)
-  const [isEditing, setIsEditing] = useState(false)
-  const [loading, setLoading] = useState(false)
-  const [formData, setFormData] = useState({
-    name: user?.name || '',
-    email: user?.email || '',
-    phone: user?.phone || '',
-    area: user?.area || '',
-    bio: user?.bio || '',
-  })
+  const user = useSelector((state) => state.auth.user)
+  const [profile, setProfile] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+  const [message, setMessage] = useState('')
 
-  const handleSave = async () => {
-    setLoading(true)
+  useEffect(() => {
+    loadProfile()
+  }, [])
+
+  const loadProfile = async () => {
     try {
-      await userAPI.updateProfile(formData)
-      setIsEditing(false)
+      const response = await userAPI.getProfile()
+      setProfile(response.data)
     } catch (error) {
-      console.error('Failed to update profile:', error)
+      console.error('Failed to load profile:', error)
+      setProfile(user)
     } finally {
       setLoading(false)
     }
   }
 
+  const handleSave = async (e) => {
+    e.preventDefault()
+    setSaving(true)
+    setMessage('')
+    try {
+      await userAPI.updateProfile(profile)
+      setMessage('Profile updated successfully!')
+    } catch (error) {
+      setMessage('Failed to update profile')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  if (loading) return <div className="p-8 text-center">Loading...</div>
+
   return (
     <div className="p-8">
-      <div className="max-w-2xl mx-auto">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">My Profile</h1>
-          <button
-            onClick={() => (isEditing ? handleSave() : setIsEditing(true))}
-            className="btn-primary flex items-center gap-2"
-          >
-            {isEditing ? (
-              <>
-                <FiSave className="w-5 h-5" /> Save
-              </>
-            ) : (
-              <>
-                <FiEdit2 className="w-5 h-5" /> Edit
-              </>
-            )}
-          </button>
-        </div>
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900">My Profile</h1>
+        <p className="text-gray-600 mt-2">Manage your account settings</p>
+      </div>
 
-        {/* Profile Card */}
+      <div className="max-w-2xl">
         <div className="card">
-          <div className="flex items-center gap-6 mb-8 pb-8 border-b">
+          <div className="flex items-center gap-6 mb-8">
             <img
               src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.id}`}
               alt={user?.name}
-              className="w-24 h-24 rounded-full"
+              className="w-20 h-20 rounded-full"
             />
             <div>
-              <h2 className="text-2xl font-bold text-gray-900">{user?.name}</h2>
+              <h2 className="text-xl font-bold text-gray-900">{user?.name}</h2>
               <p className="text-gray-600 capitalize">{user?.role}</p>
             </div>
           </div>
 
-          <div className="space-y-6">
-            {/* Name */}
+          <form onSubmit={handleSave} className="space-y-6">
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                <FiUser className="w-4 h-4 inline mr-2" />
-                Full Name
-              </label>
-              {isEditing ? (
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Full Name</label>
+              <div className="relative">
+                <FiUser className="absolute left-3 top-3 text-gray-400" />
                 <input
-                  type="text"
-                  className="input"
-                  value={formData.name}
-                  onChange={(e) =>
-                    setFormData((prev) => ({ ...prev, name: e.target.value }))
-                  }
+                  type="text" id="profile-name" className="input pl-10"
+                  value={profile?.name || ''}
+                  onChange={(e) => setProfile((prev) => ({ ...prev, name: e.target.value }))}
                 />
-              ) : (
-                <p className="text-gray-900">{user?.name}</p>
-              )}
+              </div>
             </div>
 
-            {/* Email */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                <FiMail className="w-4 h-4 inline mr-2" />
-                Email Address
-              </label>
-              <p className="text-gray-900">{user?.email}</p>
-              <p className="text-xs text-gray-500 mt-1">Email cannot be changed</p>
-            </div>
-
-            {/* Phone */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                <FiPhone className="w-4 h-4 inline mr-2" />
-                Phone Number
-              </label>
-              {isEditing ? (
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Email</label>
+              <div className="relative">
+                <FiMail className="absolute left-3 top-3 text-gray-400" />
                 <input
-                  type="text"
-                  className="input"
-                  value={formData.phone}
-                  onChange={(e) =>
-                    setFormData((prev) => ({ ...prev, phone: e.target.value }))
-                  }
+                  type="email" id="profile-email" className="input pl-10"
+                  value={profile?.email || ''} disabled
                 />
-              ) : (
-                <p className="text-gray-900">{user?.phone || 'Not provided'}</p>
-              )}
+              </div>
             </div>
 
-            {/* Area */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                <FiMapPin className="w-4 h-4 inline mr-2" />
-                Service Area
-              </label>
-              {isEditing ? (
-                <input
-                  type="text"
-                  className="input"
-                  value={formData.area}
-                  onChange={(e) =>
-                    setFormData((prev) => ({ ...prev, area: e.target.value }))
-                  }
-                />
-              ) : (
-                <p className="text-gray-900">{user?.area || 'Not provided'}</p>
-              )}
-            </div>
+            {message && (
+              <div className={`px-4 py-3 rounded-lg text-sm ${
+                message.includes('success') ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'
+              }`}>
+                {message}
+              </div>
+            )}
 
-            {/* Bio */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Bio
-              </label>
-              {isEditing ? (
-                <textarea
-                  className="input"
-                  rows="4"
-                  value={formData.bio}
-                  onChange={(e) =>
-                    setFormData((prev) => ({ ...prev, bio: e.target.value }))
-                  }
-                />
-              ) : (
-                <p className="text-gray-900">{user?.bio || 'No bio provided'}</p>
-              )}
-            </div>
-          </div>
-
-          {isEditing && (
-            <div className="mt-8 flex gap-3">
-              <button
-                onClick={() => setIsEditing(false)}
-                className="btn-secondary flex-1"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleSave}
-                disabled={loading}
-                className="btn-primary flex-1"
-              >
-                {loading ? 'Saving...' : 'Save Changes'}
-              </button>
-            </div>
-          )}
+            <button type="submit" id="profile-save" disabled={saving}
+              className="btn-primary flex items-center gap-2">
+              <FiSave className="w-4 h-4" />
+              {saving ? 'Saving...' : 'Save Changes'}
+            </button>
+          </form>
         </div>
       </div>
     </div>

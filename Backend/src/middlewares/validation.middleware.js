@@ -1,15 +1,22 @@
-const validate = (schema, property) => {
-    return (req, res, next) => {
-        const { error } = schema.validate(req[property]);
-        if (error) {
-            const { details } = error;
-            const message = details.map(i => i.message).join(",");
-            return res.status(422).json({ error: message });
-        }
-        next();
-    };
+const validateRequestBody = (req, res, next) => {
+    if (!req.body || Object.keys(req.body).length === 0) {
+        return res.status(422).json({ error: "Request body is required." });
+    }
+    next();
 };
 
-export const validateRequestBody = (schema) => validate(schema, "body");
-export const validateQueryParams = (schema) => validate(schema, "query");
-export const validateRouteParams = (schema) => validate(schema, "params");
+const validateQueryParams = (req, res, next) => {
+    if (!req.query || Object.keys(req.query).length === 0) {
+        return res.status(422).json({ error: "Query parameters are required." });
+    }
+    next();
+};
+
+const validateRouteParams = (req, res, next) => {
+    if (!req.params || Object.keys(req.params).length === 0) {
+        return res.status(422).json({ error: "Route parameters are required." });
+    }
+    next();
+};
+
+export { validateRequestBody, validateQueryParams, validateRouteParams };

@@ -3,6 +3,7 @@ import ServiceRequestRepository from "../repositories/serviceRequest.repository.
 import AssignmentRepository from "../repositories/assignment.repository.js";
 import ReviewRepository from "../repositories/review.repository.js";
 import TechnicianRepository from "../repositories/technician.repository.js";
+import ServiceRequestService from "../services/serviceRequest.service.js";
 
 /**
  * DashboardController
@@ -19,19 +20,26 @@ const DashboardController = {
     async getAdminDashboard(req, res, next) {
         try {
             const totalUsers = await UserRepository.count();
-            const activeServiceRequests = await ServiceRequestRepository.findByStatus("active");
+            const allRequests = await ServiceRequestService.getAllServiceRequests();
+            const pendingRequests = allRequests.filter((request) => request.status === "pending");
+            const inProgressRequests = allRequests.filter((request) => request.status === "in_progress");
+            const completedRequests = allRequests.filter((request) => request.status === "completed");
             const totalAssignments = await AssignmentRepository.findAll();
             const averageRating = await ReviewRepository.getAverageRating();
+            const recentRequests = allRequests.slice(0, 5);
 
             return res.status(200).json({
                 success: true,
                 data: {
                     statistics: {
                         totalUsers,
-                        activeServiceRequests: activeServiceRequests.length,
+                        activeServiceRequests: inProgressRequests.length,
                         totalAssignments: totalAssignments.length,
-                        averageRating: averageRating || 0
+                        averageRating: averageRating || 0,
+                        pending: pendingRequests.length,
+                        completed: completedRequests.length
                     },
+                    recentRequests,
                     timestamp: new Date().toISOString()
                 }
             });
@@ -68,7 +76,7 @@ const DashboardController = {
      */
     async getAdminServiceRequests(req, res, next) {
         try {
-            const allRequests = await ServiceRequestRepository.findAll();
+            const allRequests = await ServiceRequestService.getAllServiceRequests();
             const pendingRequests = allRequests.filter(r => r.status === "pending");
             const completedRequests = allRequests.filter(r => r.status === "completed");
             const inProgressRequests = allRequests.filter(r => r.status === "in_progress");
@@ -99,9 +107,11 @@ const DashboardController = {
     async getCustomerDashboard(req, res, next) {
         try {
             const userId = req.user.id;
-            const serviceRequests = await ServiceRequestRepository.findByCustomerId(userId);
-            const activeRequests = serviceRequests.filter(r => r.status === "in_progress");
-            const completedRequests = serviceRequests.filter(r => r.status === "completed");
+            const serviceRequests = await ServiceRequestService.getCustomerRequests(userId);
+            const activeRequests = serviceRequests.filter(
+                (r) => r.status === "in_progress" || r.status === "requested"
+            );
+            const completedRequests = serviceRequests.filter((r) => r.status === "completed");
 
             return res.status(200).json({
                 success: true,
@@ -128,7 +138,7 @@ const DashboardController = {
     async getCustomerServiceRequests(req, res, next) {
         try {
             const userId = req.user.id;
-            const serviceRequests = await ServiceRequestRepository.findByCustomerId(userId);
+            const serviceRequests = await ServiceRequestService.getCustomerRequests(userId);
 
             return res.status(200).json({
                 success: true,
@@ -172,8 +182,18 @@ const DashboardController = {
             const userId = req.user.id;
             const technicianProfile = await TechnicianRepository.findByUserId(userId);
             const assignments = await AssignmentRepository.findByTechnicianId(technicianProfile.id);
-            const completedAssignments = assignments.filter(a => a.status === "completed");
-            const pendingAssignments = assignments.filter(a => a.status === "pending");
+
+            await Promise.all(assignments.map(async (assignment) => {
+                if (assignment.request) {
+                    assignment.request = await ServiceRequestService.attachRequestStatus(assignment.request);
+                }
+                return assignment;
+            }));
+
+            const completedAssignments = assignments.filter((a) => a.request?.status === "completed");
+            const pendingAssignments = assignments.filter(
+                (a) => a.request?.status === "pending" || a.request?.status === "in_progress" || a.request?.status === "requested"
+            );
 
             return res.status(200).json({
                 success: true,
@@ -182,7 +202,8 @@ const DashboardController = {
                         total: assignments.length,
                         pending: pendingAssignments.length,
                         completed: completedAssignments.length,
-                        rating: technicianProfile.rating || 0
+                        rating: technicianProfile.rating || 0,
+                        availabilityStatus: technicianProfile.availability_status || 'offline'
                     },
                     upcomingAssignments: pendingAssignments.slice(0, 5)
                 }
@@ -203,6 +224,13 @@ const DashboardController = {
             const userId = req.user.id;
             const technicianProfile = await TechnicianRepository.findByUserId(userId);
             const assignments = await AssignmentRepository.findByTechnicianId(technicianProfile.id);
+
+            await Promise.all(assignments.map(async (assignment) => {
+                if (assignment.request) {
+                    assignment.request = await ServiceRequestService.attachRequestStatus(assignment.request);
+                }
+                return assignment;
+            }));
 
             return res.status(200).json({
                 success: true,

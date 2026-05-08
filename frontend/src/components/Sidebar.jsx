@@ -10,11 +10,11 @@ import {
   FiGift,
   FiCheckCircle,
 } from 'react-icons/fi'
-import { useUIStore } from '../store'
+import { useSelector } from 'react-redux'
 
 export default function Sidebar({ role }) {
   const location = useLocation()
-  const isSidebarOpen = useUIStore((state) => state.isSidebarOpen)
+  const isSidebarOpen = useSelector((state) => state.ui.isSidebarOpen)
 
   const getMenuItems = () => {
     const commonItems = [
@@ -26,23 +26,17 @@ export default function Sidebar({ role }) {
         ...commonItems,
         { icon: FiClipboard, label: 'All Requests', path: '/admin/requests' },
         { icon: FiUsers, label: 'Users', path: '/admin/users' },
-        { icon: FiGift, label: 'Technicians', path: '/admin/technicians' },
-        { icon: FiCheckCircle, label: 'Assignments', path: '/admin/assignments' },
-        { icon: FiSettings, label: 'Categories', path: '/admin/categories' },
       ]
     } else if (role === 'customer') {
       return [
         ...commonItems,
         { icon: FiClipboard, label: 'My Requests', path: '/customer/requests' },
-        { icon: FiStar, label: 'My Reviews', path: '/customer/reviews' },
         { icon: FiGift, label: 'Find Technicians', path: '/customer/technicians' },
       ]
     } else if (role === 'technician') {
       return [
         ...commonItems,
-        { icon: FiCheckCircle, label: 'My Assignments', path: '/technician/assignments' },
-        { icon: FiStar, label: 'My Reviews', path: '/technician/reviews' },
-        { icon: FiSettings, label: 'My Profile', path: '/technician/profile' },
+        { icon: FiSettings, label: 'My Profile', path: '/profile' },
       ]
     }
 
@@ -53,9 +47,9 @@ export default function Sidebar({ role }) {
 
   return (
     <aside
-      className={`fixed left-0 top-16 h-[calc(100vh-64px)] bg-white border-r border-gray-200 transition-all duration-300 ${
+      className={`h-full bg-white border-r border-gray-200 transition-all duration-300 ${
         isSidebarOpen ? 'w-64' : 'w-20'
-      } overflow-y-auto`}
+      } overflow-y-auto flex-shrink-0`}
     >
       <div className="p-4 space-y-2">
         {menuItems.map((item) => {
