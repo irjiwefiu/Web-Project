@@ -143,12 +143,10 @@ const ServiceRequestController = {
         }
     },
 
-    async getAvailableServiceRequestsController(req, res, next) {
+    async getAvailableRequestsController(req, res, next) {
         try {
-            const { category_id } = req.query;
-            const filters = {};
-            if (category_id) filters.category_id = category_id;
-            const requests = await ServiceRequestService.filterServiceRequests(filters);
+            // Get all requests with 'requested' status (meaning unassigned)
+            const requests = await ServiceRequestService.filterServiceRequests({ status: 'requested' });
             return res.status(200).json({ success: true, count: requests.length, data: requests });
         } catch (error) {
             next(error);

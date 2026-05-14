@@ -66,6 +66,7 @@ export const technicianAPI = {
 // Service Request API
 export const requestAPI = {
   create: (body) => fetchAPI('/requests', { method: 'POST', body: JSON.stringify(body) }),
+  getAvailable: () => fetchAPI('/requests/available'),
   getAll: (params) => {
     const query = params ? '?' + new URLSearchParams(params).toString() : ''
     return fetchAPI(`/requests${query}`)
@@ -83,6 +84,7 @@ export const requestAPI = {
 
 // Assignment API
 export const assignmentAPI = {
+  apply: (body) => fetchAPI('/assignments/apply', { method: 'POST', body: JSON.stringify(body) }),
   create: (body) => fetchAPI('/assignments', { method: 'POST', body: JSON.stringify(body) }),
   adminAssign: (body) => fetchAPI('/assignments/admin/assign', { method: 'POST', body: JSON.stringify(body) }),
   reassign: (id, body) => fetchAPI(`/assignments/${id}/reassign`, { method: 'PATCH', body: JSON.stringify(body) }),
@@ -101,6 +103,7 @@ export const statusAPI = {
 // Review API
 export const reviewAPI = {
   create: (body) => fetchAPI('/reviews', { method: 'POST', body: JSON.stringify(body) }),
+  getAll: () => fetchAPI('/reviews'),
   getByRequest: (requestId) => fetchAPI(`/reviews/request/${requestId}`),
   getByTechnician: (techId) => fetchAPI(`/reviews/technician/${techId}`),
   getMyReviews: () => fetchAPI('/reviews/customer/me'),

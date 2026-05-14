@@ -74,6 +74,13 @@ const ReviewService = {
     },
 
     /**
+     * getAllReviews: List of all reviews for admin dashboard.
+     */
+    async getAllReviews() {
+        return await ReviewRepository.getAllReviews();
+    },
+
+    /**
      * getCustomerReviews: List of all reviews written by a specific customer.
      */
     async getCustomerReviews(customerId) {
@@ -101,9 +108,10 @@ const ReviewService = {
     /**
      * deleteReview: Removes a review and updates the technician's average.
      */
-    async deleteReview(reviewId, customerId) {
+    async deleteReview(reviewId, userId, userRole) {
+        const whereClause = userRole === 'admin' ? { id: reviewId } : { id: reviewId, reviewer: { id: userId } };
         const review = await ReviewRepository.findOne({ 
-            where: { id: reviewId, reviewer: { id: customerId } },
+            where: whereClause,
             relations: ["technician"]
         });
 

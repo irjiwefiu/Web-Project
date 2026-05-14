@@ -24,6 +24,18 @@ router.post(
 );
 
 /**
+ * GET /requests/available
+ * Get all available service requests for technicians
+ * Protected: Technician only
+ */
+router.get(
+    "/available",
+    authenticateUser,
+    authorizeRoles("technician"),
+    ServiceRequestController.getAvailableRequestsController
+);
+
+/**
  * GET /requests
  * Get all service requests
  * Protected: Admin only

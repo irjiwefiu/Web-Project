@@ -26,6 +26,14 @@ const ReviewRepository = AppDataSource.getRepository(Review).extend({
         });
     },
 
+    // 3b. Get all reviews (for Admin)
+    async getAllReviews() {
+        return await this.find({
+            relations: ["reviewer", "technician", "request"],
+            order: { created_at: "DESC" }
+        });
+    },
+
     // 4. Get all reviews written by a specific customer
     async getReviewsByCustomer(customerId) {
         return await this.find({

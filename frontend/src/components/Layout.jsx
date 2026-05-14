@@ -9,12 +9,14 @@ export default function Layout({ children }) {
   if (!user) return null
 
   return (
-    <div className="flex flex-col h-screen bg-gray-50">
+    <div className="flex flex-col h-screen bg-page font-sans text-content-primary">
       <Navbar />
       <div className="flex flex-1 overflow-hidden">
         <Sidebar role={user.role} />
-        <main className="flex-1 overflow-y-auto">
-          {children}
+        <main className="flex-1 overflow-y-auto p-8">
+          <div className="max-w-[1200px] mx-auto w-full">
+            {children}
+          </div>
         </main>
       </div>
     </div>

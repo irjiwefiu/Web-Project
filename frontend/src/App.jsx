@@ -15,8 +15,11 @@ import UserManagement from './pages/UserManagement'
 import RequestManagement from './pages/RequestManagement'
 import CategoryManagement from './pages/CategoryManagement'
 import TechnicianManagement from './pages/TechnicianManagement'
+import AdminReviews from './pages/AdminReviews'
+import AdminAlerts from './pages/AdminAlerts'
 import UserProfile from './pages/UserProfile'
 import NotFound from './pages/NotFound'
+import DemoPage from './pages/DemoPage'
 
 export default function App() {
   return (
@@ -25,97 +28,99 @@ export default function App() {
         {/* Public Auth Routes */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        
+        {/* Demo Route */}
+        <Route path="/demo" element={<DemoPage />} />
 
         {/* ── Admin Routes ────────────────────────────── */}
-        <Route
-          path="/dashboard/admin"
-          element={
-            <ProtectedRoute allowedRoles={['admin']}>
-              <Layout><AdminDashboard /></Layout>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/admin/requests"
-          element={
-            <ProtectedRoute allowedRoles={['admin']}>
-              <Layout><RequestManagement /></Layout>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/admin/users"
-          element={
-            <ProtectedRoute allowedRoles={['admin']}>
-              <Layout><UserManagement /></Layout>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/admin/technicians"
-          element={
-            <ProtectedRoute allowedRoles={['admin']}>
-              <Layout><TechnicianManagement /></Layout>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/admin/categories"
-          element={
-            <ProtectedRoute allowedRoles={['admin']}>
-              <Layout><CategoryManagement /></Layout>
-            </ProtectedRoute>
-          }
-        />
+        <Route path="/dashboard/admin" element={
+          <ProtectedRoute allowedRoles={['admin']}>
+            <Layout><AdminDashboard /></Layout>
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/requests" element={
+          <ProtectedRoute allowedRoles={['admin']}>
+            <Layout><RequestManagement /></Layout>
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/users" element={
+          <ProtectedRoute allowedRoles={['admin']}>
+            <Layout><UserManagement /></Layout>
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/technicians" element={
+          <ProtectedRoute allowedRoles={['admin']}>
+            <Layout><TechnicianManagement /></Layout>
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/categories" element={
+          <ProtectedRoute allowedRoles={['admin']}>
+            <Layout><CategoryManagement /></Layout>
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/reviews" element={
+          <ProtectedRoute allowedRoles={['admin']}>
+            <Layout><AdminReviews /></Layout>
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/alerts" element={
+          <ProtectedRoute allowedRoles={['admin']}>
+            <Layout><AdminAlerts /></Layout>
+          </ProtectedRoute>
+        } />
 
         {/* ── Customer Routes ─────────────────────────── */}
-        <Route
-          path="/dashboard/customer"
-          element={
-            <ProtectedRoute allowedRoles={['customer']}>
-              <Layout><CustomerDashboard /></Layout>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/customer/requests"
-          element={
-            <ProtectedRoute allowedRoles={['customer']}>
-              <Layout><CustomerRequests /></Layout>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/customer/technicians"
-          element={
-            <ProtectedRoute allowedRoles={['customer']}>
-              <Layout><FindTechnicians /></Layout>
-            </ProtectedRoute>
-          }
-        />
+        <Route path="/dashboard/customer" element={
+          <ProtectedRoute allowedRoles={['customer']}>
+            <Layout><CustomerDashboard /></Layout>
+          </ProtectedRoute>
+        } />
+        <Route path="/customer/requests" element={
+          <ProtectedRoute allowedRoles={['customer']}>
+            <Layout><CustomerRequests /></Layout>
+          </ProtectedRoute>
+        } />
+        <Route path="/customer/technicians" element={
+          <ProtectedRoute allowedRoles={['customer']}>
+            <Layout><FindTechnicians /></Layout>
+          </ProtectedRoute>
+        } />
+        {/* Customer placeholder routes */}
+        <Route path="/customer/jobs" element={
+          <ProtectedRoute allowedRoles={['customer']}><Layout><CustomerRequests /></Layout></ProtectedRoute>
+        } />
+        <Route path="/customer/messages" element={
+          <ProtectedRoute allowedRoles={['customer']}><Layout><CustomerDashboard /></Layout></ProtectedRoute>
+        } />
+        <Route path="/customer/track" element={
+          <ProtectedRoute allowedRoles={['customer']}><Layout><CustomerDashboard /></Layout></ProtectedRoute>
+        } />
+        <Route path="/customer/payments" element={
+          <ProtectedRoute allowedRoles={['customer']}><Layout><CustomerDashboard /></Layout></ProtectedRoute>
+        } />
+        <Route path="/customer/reviews" element={
+          <ProtectedRoute allowedRoles={['customer']}><Layout><CustomerDashboard /></Layout></ProtectedRoute>
+        } />
+        <Route path="/customer/settings" element={
+          <ProtectedRoute allowedRoles={['customer']}><Layout><CustomerDashboard /></Layout></ProtectedRoute>
+        } />
 
         {/* ── Technician Routes ───────────────────────── */}
-        <Route
-          path="/dashboard/technician"
-          element={
-            <ProtectedRoute allowedRoles={['technician']}>
-              <Layout><TechnicianDashboard /></Layout>
-            </ProtectedRoute>
-          }
-        />
+        <Route path="/dashboard/technician" element={
+          <ProtectedRoute allowedRoles={['technician']}>
+            <Layout><TechnicianDashboard /></Layout>
+          </ProtectedRoute>
+        } />
 
         {/* ── Shared Routes ───────────────────────────── */}
-        <Route
-          path="/profile"
-          element={
-            <ProtectedRoute allowedRoles={['admin', 'customer', 'technician']}>
-              <Layout><UserProfile /></Layout>
-            </ProtectedRoute>
-          }
-        />
+        <Route path="/profile" element={
+          <ProtectedRoute allowedRoles={['admin', 'customer', 'technician']}>
+            <Layout><UserProfile /></Layout>
+          </ProtectedRoute>
+        } />
 
         {/* Redirects */}
-        <Route path="/" element={<Navigate to="/login" replace />} />
+        <Route path="/" element={<Navigate to="/demo" replace />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>

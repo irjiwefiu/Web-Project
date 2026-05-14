@@ -63,6 +63,24 @@ const ReviewController = {
     },
 
     /**
+     * getAllReviewsController
+     * GET /reviews
+     */
+    async getAllReviewsController(req, res, next) {
+        try {
+            const reviews = await ReviewService.getAllReviews();
+            
+            return res.status(200).json({
+                success: true,
+                count: reviews.length,
+                data: reviews
+            });
+        } catch (error) {
+            next(error);
+        }
+    },
+
+    /**
      * getCustomerReviewsController
      * GET /reviews/customer/me
      */
@@ -104,7 +122,8 @@ const ReviewController = {
     async deleteReviewController(req, res, next) {
         try {
             const { id } = req.params;
-            await ReviewService.deleteReview(id, req.user.id);
+            const roleName = req.user.role ? req.user.role.name : req.user.role_name;
+            await ReviewService.deleteReview(id, req.user.id, roleName);
             
             return res.status(200).json({
                 success: true,

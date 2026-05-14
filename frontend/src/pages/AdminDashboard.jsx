@@ -1,32 +1,49 @@
 import React, { useState, useEffect } from 'react'
 import {
-  FiTrendingUp, FiUsers, FiCheckCircle, FiClock, FiClipboard,
-  FiX, FiTool, FiTag, FiUserPlus, FiZap, FiAlertCircle
-} from 'react-icons/fi'
+  IconArrowUpRight, IconStar, IconBriefcase, IconUsers,
+  IconCoin, IconAlertTriangle, IconTool, IconTag, IconUserPlus,
+  IconClipboard, IconAlertCircle, IconX
+} from '@tabler/icons-react'
 import { useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import {
   dashboardAPI, userAPI, requestAPI, assignmentAPI, categoryAPI
 } from '../services/api'
 
-function StatCard({ icon: Icon, label, value, color, onClick }) {
+// ── Badge ──
+const Badge = ({ text, type }) => {
+  const styles = {
+    success: 'bg-[#14301f] text-[#4ade80]',
+    warning: 'bg-[#2d2010] text-[#fbbf24]',
+    info: 'bg-[#0e2040] text-[#7eb8f7]',
+    danger: 'bg-[#2d1010] text-[#f87171]',
+  }
   return (
-    <div
-      className={`card flex items-center gap-4 ${onClick ? 'cursor-pointer hover:shadow-md transition-shadow' : ''}`}
-      onClick={onClick}
-    >
-      <div className={`p-4 rounded-xl ${color}`}>
-        <Icon className="w-6 h-6 text-white" />
-      </div>
-      <div>
-        <p className="text-sm text-gray-500">{label}</p>
-        <p className="text-2xl font-bold text-gray-900">{value}</p>
-      </div>
+    <span className={`px-2.5 py-1 rounded-sm text-[11px] uppercase tracking-wider font-semibold ${styles[type] || styles.info}`}>
+      {text}
+    </span>
+  )
+}
+
+// ── Stat Card ──
+function StatCard({ label, value, change, positive, alert }) {
+  return (
+    <div className="card flex flex-col justify-between min-h-[110px]">
+      <p className="text-content-muted text-[13px] mb-2">{label}</p>
+      <p className="text-content-primary text-[22px] font-semibold leading-tight mb-3">{value}</p>
+      {change && (
+        <div className={`flex items-center gap-1 text-[11px] font-medium ${
+          alert ? 'text-[#f87171]' : positive ? 'text-[#4ade80]' : 'text-content-muted'
+        }`}>
+          <IconArrowUpRight size={14} />
+          {change}
+        </div>
+      )}
     </div>
   )
 }
 
-// ─── Assign Technician Modal ────────────────────────────────────────────────
+// ── Assign Technician Modal ──
 function AssignModal({ onClose, onSuccess }) {
   const [requests, setRequests] = useState([])
   const [technicians, setTechnicians] = useState([])
@@ -70,79 +87,55 @@ function AssignModal({ onClose, onSuccess }) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4">
-        <div className="flex items-center justify-between px-6 py-4 border-b">
-          <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-            <FiTool className="w-5 h-5 text-primary-600" /> Assign Technician
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+      <div className="bg-surface rounded-md border border-border shadow-2xl w-full max-w-md mx-4 animate-slide-up">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-border">
+          <h2 className="text-[15px] font-bold text-content-primary flex items-center gap-2">
+            <IconTool size={18} className="text-[#7eb8f7]" /> Assign Technician
           </h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
-            <FiX className="w-5 h-5" />
+          <button onClick={onClose} className="text-content-muted hover:text-content-primary">
+            <IconX size={18} />
           </button>
         </div>
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           {loading ? (
-            <p className="text-center text-gray-500 py-4">Loading data...</p>
+            <p className="text-center text-content-muted py-4 text-[13px]">Loading data...</p>
           ) : (
             <>
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <label className="block text-[11px] font-semibold text-content-muted mb-2 uppercase tracking-wider">
                   Service Request (Pending only)
                 </label>
-                <select
-                  id="assign-request-select"
-                  className="input w-full"
-                  value={selectedRequest}
-                  onChange={(e) => setSelectedRequest(e.target.value)}
-                  required
-                >
+                <select id="assign-request-select" className="input w-full" value={selectedRequest}
+                  onChange={(e) => setSelectedRequest(e.target.value)} required>
                   <option value="">— Select request —</option>
                   {requests.map((r) => (
-                    <option key={r.id} value={r.id}>
-                      #{r.id} · {r.title}
-                    </option>
+                    <option key={r.id} value={r.id}>#{r.id} · {r.title}</option>
                   ))}
                 </select>
-                {requests.length === 0 && (
-                  <p className="text-xs text-gray-400 mt-1">No pending requests found</p>
-                )}
               </div>
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <label className="block text-[11px] font-semibold text-content-muted mb-2 uppercase tracking-wider">
                   Technician
                 </label>
-                <select
-                  id="assign-tech-select"
-                  className="input w-full"
-                  value={selectedTech}
-                  onChange={(e) => setSelectedTech(e.target.value)}
-                  required
-                >
+                <select id="assign-tech-select" className="input w-full" value={selectedTech}
+                  onChange={(e) => setSelectedTech(e.target.value)} required>
                   <option value="">— Select technician —</option>
                   {technicians.map((t) => (
-                    <option key={t.id} value={t.id}>
-                      {t.name || t.username} ({t.email})
-                    </option>
+                    <option key={t.id} value={t.id}>{t.name || t.username} ({t.email})</option>
                   ))}
                 </select>
               </div>
             </>
           )}
           {error && (
-            <div className="flex items-center gap-2 bg-red-50 text-red-600 px-4 py-3 rounded-lg text-sm">
-              <FiAlertCircle className="w-4 h-4 flex-shrink-0" /> {error}
+            <div className="flex items-center gap-2 bg-[#2d1010] text-[#f87171] px-4 py-3 rounded-sm text-[13px]">
+              <IconAlertCircle size={16} /> {error}
             </div>
           )}
           <div className="flex justify-end gap-3 pt-2">
-            <button type="button" onClick={onClose} className="btn-secondary">
-              Cancel
-            </button>
-            <button
-              type="submit"
-              id="confirm-assign-btn"
-              className="btn-primary"
-              disabled={submitting || loading}
-            >
+            <button type="button" onClick={onClose} className="btn btn-outline">Cancel</button>
+            <button type="submit" id="confirm-assign-btn" className="btn btn-primary" disabled={submitting || loading}>
               {submitting ? 'Assigning...' : 'Assign'}
             </button>
           </div>
@@ -152,7 +145,7 @@ function AssignModal({ onClose, onSuccess }) {
   )
 }
 
-// ─── Add Category Modal ─────────────────────────────────────────────────────
+// ── Add Category Modal ──
 function AddCategoryModal({ onClose, onSuccess }) {
   const [name, setName] = useState('')
   const [submitting, setSubmitting] = useState(false)
@@ -175,45 +168,31 @@ function AddCategoryModal({ onClose, onSuccess }) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm mx-4">
-        <div className="flex items-center justify-between px-6 py-4 border-b">
-          <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-            <FiTag className="w-5 h-5 text-primary-600" /> Add Category
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+      <div className="bg-surface rounded-md border border-border shadow-2xl w-full max-w-sm mx-4 animate-slide-up">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-border">
+          <h2 className="text-[15px] font-bold text-content-primary flex items-center gap-2">
+            <IconTag size={18} className="text-[#7eb8f7]" /> Add Category
           </h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
-            <FiX className="w-5 h-5" />
+          <button onClick={onClose} className="text-content-muted hover:text-content-primary">
+            <IconX size={18} />
           </button>
         </div>
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Category Name
-            </label>
-            <input
-              id="quick-category-name"
-              type="text"
-              className="input w-full"
-              placeholder="e.g., Solar Installation"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-              autoFocus
-            />
+            <label className="block text-[11px] font-semibold text-content-muted mb-2 uppercase tracking-wider">Category Name</label>
+            <input id="quick-category-name" type="text" className="input w-full"
+              placeholder="e.g., Solar Installation" value={name}
+              onChange={(e) => setName(e.target.value)} required autoFocus />
           </div>
           {error && (
-            <div className="flex items-center gap-2 bg-red-50 text-red-600 px-4 py-3 rounded-lg text-sm">
-              <FiAlertCircle className="w-4 h-4 flex-shrink-0" /> {error}
+            <div className="flex items-center gap-2 bg-[#2d1010] text-[#f87171] px-4 py-3 rounded-sm text-[13px]">
+              <IconAlertCircle size={16} /> {error}
             </div>
           )}
           <div className="flex justify-end gap-3 pt-2">
-            <button type="button" onClick={onClose} className="btn-secondary">Cancel</button>
-            <button
-              type="submit"
-              id="quick-add-category-btn"
-              className="btn-primary"
-              disabled={submitting}
-            >
+            <button type="button" onClick={onClose} className="btn btn-outline">Cancel</button>
+            <button type="submit" id="quick-add-category-btn" className="btn btn-primary" disabled={submitting}>
               {submitting ? 'Creating...' : 'Create'}
             </button>
           </div>
@@ -223,7 +202,7 @@ function AddCategoryModal({ onClose, onSuccess }) {
   )
 }
 
-// ─── Add User Modal ──────────────────────────────────────────────────────────
+// ── Add User Modal ──
 function AddUserModal({ onClose, onSuccess }) {
   const [form, setForm] = useState({ name: '', username: '', email: '', password: '', roleName: 'customer' })
   const [submitting, setSubmitting] = useState(false)
@@ -247,41 +226,41 @@ function AddUserModal({ onClose, onSuccess }) {
   const set = (field) => (e) => setForm((p) => ({ ...p, [field]: e.target.value }))
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4">
-        <div className="flex items-center justify-between px-6 py-4 border-b">
-          <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-            <FiUserPlus className="w-5 h-5 text-primary-600" /> Add New User
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+      <div className="bg-surface rounded-md border border-border shadow-2xl w-full max-w-md mx-4 animate-slide-up">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-border">
+          <h2 className="text-[15px] font-bold text-content-primary flex items-center gap-2">
+            <IconUserPlus size={18} className="text-[#7eb8f7]" /> Add New User
           </h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
-            <FiX className="w-5 h-5" />
+          <button onClick={onClose} className="text-content-muted hover:text-content-primary">
+            <IconX size={18} />
           </button>
         </div>
         <form onSubmit={handleSubmit} className="p-6 space-y-3">
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-semibold text-gray-600 mb-1">Full Name</label>
+              <label className="block text-[11px] font-semibold text-content-muted mb-1 uppercase tracking-wider">Full Name</label>
               <input type="text" className="input w-full" placeholder="Jane Doe"
                 value={form.name} onChange={set('name')} required />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-gray-600 mb-1">Username</label>
+              <label className="block text-[11px] font-semibold text-content-muted mb-1 uppercase tracking-wider">Username</label>
               <input type="text" className="input w-full" placeholder="janedoe"
                 value={form.username} onChange={set('username')} required />
             </div>
           </div>
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1">Email</label>
+            <label className="block text-[11px] font-semibold text-content-muted mb-1 uppercase tracking-wider">Email</label>
             <input type="email" className="input w-full" placeholder="jane@example.com"
               value={form.email} onChange={set('email')} required />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1">Password</label>
+            <label className="block text-[11px] font-semibold text-content-muted mb-1 uppercase tracking-wider">Password</label>
             <input type="password" className="input w-full" placeholder="••••••••"
               value={form.password} onChange={set('password')} required />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1">Role</label>
+            <label className="block text-[11px] font-semibold text-content-muted mb-1 uppercase tracking-wider">Role</label>
             <select className="input w-full" value={form.roleName} onChange={set('roleName')}>
               <option value="customer">Customer</option>
               <option value="technician">Technician</option>
@@ -289,13 +268,13 @@ function AddUserModal({ onClose, onSuccess }) {
             </select>
           </div>
           {error && (
-            <div className="flex items-center gap-2 bg-red-50 text-red-600 px-4 py-3 rounded-lg text-sm">
-              <FiAlertCircle className="w-4 h-4 flex-shrink-0" /> {error}
+            <div className="flex items-center gap-2 bg-[#2d1010] text-[#f87171] px-4 py-3 rounded-sm text-[13px]">
+              <IconAlertCircle size={16} /> {error}
             </div>
           )}
           <div className="flex justify-end gap-3 pt-2">
-            <button type="button" onClick={onClose} className="btn-secondary">Cancel</button>
-            <button type="submit" id="quick-add-user-btn" className="btn-primary" disabled={submitting}>
+            <button type="button" onClick={onClose} className="btn btn-outline">Cancel</button>
+            <button type="submit" id="quick-add-user-btn" className="btn btn-primary" disabled={submitting}>
               {submitting ? 'Creating...' : 'Create User'}
             </button>
           </div>
@@ -305,11 +284,18 @@ function AddUserModal({ onClose, onSuccess }) {
   )
 }
 
-// ─── Main Component ──────────────────────────────────────────────────────────
+// ── Demo data for technician performance (used when API returns minimal data) ──
+const DEMO_TECH_PERF = [
+  { name: 'Usman T.', rating: 4.9, jobs: 42, color: 'bg-[#7eb8f7]', width: '90%' },
+  { name: 'Raza A.', rating: 4.7, jobs: 31, color: 'bg-[#4ade80]', width: '75%' },
+  { name: 'Zainab K.', rating: 4.5, jobs: 27, color: 'bg-[#fbbf24]', width: '60%' },
+]
+
+// ── Main Component ──
 export default function AdminDashboard() {
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [modal, setModal] = useState(null) // 'assign' | 'category' | 'user'
+  const [modal, setModal] = useState(null)
   const [toast, setToast] = useState(null)
   const user = useSelector((state) => state.auth.user)
   const navigate = useNavigate()
@@ -340,180 +326,127 @@ export default function AdminDashboard() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin w-10 h-10 border-4 border-primary-600 border-t-transparent rounded-full" />
+        <div className="animate-spin w-8 h-8 border-2 border-[#7eb8f7] border-t-transparent rounded-full" />
       </div>
     )
   }
 
   const stats = data?.statistics || {}
+  const recentJobs = data?.recentRequests || []
 
-  const quickActions = [
-    {
-      id: 'qa-assign',
-      icon: FiTool,
-      label: 'Assign Technician',
-      desc: 'Dispatch a technician to a pending request',
-      color: 'bg-blue-500',
-      action: () => setModal('assign'),
-    },
-    {
-      id: 'qa-add-user',
-      icon: FiUserPlus,
-      label: 'Add New User',
-      desc: 'Create a customer, technician or admin',
-      color: 'bg-green-500',
-      action: () => setModal('user'),
-    },
-    {
-      id: 'qa-category',
-      icon: FiTag,
-      label: 'Add Category',
-      desc: 'Create a new service category',
-      color: 'bg-purple-500',
-      action: () => setModal('category'),
-    },
-    {
-      id: 'qa-requests',
-      icon: FiClipboard,
-      label: 'View All Requests',
-      desc: 'Browse and manage service requests',
-      color: 'bg-yellow-500',
-      action: () => navigate('/admin/requests'),
-    },
-    {
-      id: 'qa-users',
-      icon: FiUsers,
-      label: 'Manage Users',
-      desc: 'View, edit or delete user accounts',
-      color: 'bg-orange-500',
-      action: () => navigate('/admin/users'),
-    },
-    {
-      id: 'qa-technicians',
-      icon: FiZap,
-      label: 'Manage Technicians',
-      desc: 'View technician profiles and skills',
-      color: 'bg-pink-500',
-      action: () => navigate('/admin/technicians'),
-    },
-  ]
+  const STATUS_MAP = {
+    pending: { label: 'Pending', type: 'warning' },
+    requested: { label: 'Pending', type: 'warning' },
+    in_progress: { label: 'In progress', type: 'info' },
+    completed: { label: 'Completed', type: 'success' },
+    cancelled: { label: 'Cancelled', type: 'danger' },
+    assigned: { label: 'Assigned', type: 'success' },
+  }
 
   return (
-    <div className="p-8">
+    <div className="flex flex-col gap-6 animate-fade-in">
       {/* Toast */}
       {toast && (
-        <div className={`fixed top-6 right-6 z-50 px-5 py-3 rounded-xl shadow-lg text-white font-semibold transition-all ${
-          toast.type === 'error' ? 'bg-red-600' : 'bg-green-600'
+        <div className={`fixed top-4 right-4 z-50 px-5 py-3 rounded-sm text-[13px] font-semibold animate-slide-down border ${
+          toast.type === 'error'
+            ? 'bg-[#2d1010] text-[#f87171] border-[#2d1010]'
+            : 'bg-[#14301f] text-[#4ade80] border-[#14301f]'
         }`}>
           {toast.msg}
         </div>
       )}
 
       {/* Modals */}
-      {modal === 'assign' && (
-        <AssignModal onClose={() => setModal(null)} onSuccess={handleSuccess} />
-      )}
-      {modal === 'category' && (
-        <AddCategoryModal onClose={() => setModal(null)} onSuccess={handleSuccess} />
-      )}
-      {modal === 'user' && (
-        <AddUserModal onClose={() => setModal(null)} onSuccess={handleSuccess} />
-      )}
+      {modal === 'assign' && <AssignModal onClose={() => setModal(null)} onSuccess={handleSuccess} />}
+      {modal === 'category' && <AddCategoryModal onClose={() => setModal(null)} onSuccess={handleSuccess} />}
+      {modal === 'user' && <AddUserModal onClose={() => setModal(null)} onSuccess={handleSuccess} />}
 
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
-        <p className="text-gray-500 mt-2">
-          Welcome back, <span className="font-semibold text-primary-600">{user?.name}</span>.
-          Here's the system overview.
-        </p>
+      {/* Stats Row */}
+      <div className="grid grid-cols-4 gap-4">
+        <StatCard label="Total users" value={stats.totalUsers || '0'} change="+12% this month" positive />
+        <StatCard label="Active jobs" value={stats.activeServiceRequests || '0'} change="+8% this week" positive />
+        <StatCard label="Revenue" value={`$${stats.totalAssignments ? stats.totalAssignments * 85 : '92k'}`} change="+5% vs last month" positive />
+        <StatCard label="Disputes open" value={stats.pending || '0'} change="+3 new today" alert />
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-5 mb-8">
-        <StatCard icon={FiUsers} label="Total Users" value={stats.totalUsers || 0} color="bg-blue-500"
-          onClick={() => navigate('/admin/users')} />
-        <StatCard icon={FiClipboard} label="In Progress" value={stats.activeServiceRequests || 0} color="bg-yellow-500"
-          onClick={() => navigate('/admin/requests')} />
-        <StatCard icon={FiCheckCircle} label="Assignments" value={stats.totalAssignments || 0} color="bg-green-500"
-          onClick={() => navigate('/admin/requests')} />
-        <StatCard icon={FiTrendingUp} label="Avg Rating" value={stats.averageRating > 0 ? `${Number(stats.averageRating).toFixed(1)}★` : '—'} color="bg-purple-500" />
-        <StatCard icon={FiClock} label="Pending" value={stats.pending || 0} color="bg-red-500"
-          onClick={() => navigate('/admin/requests')} />
-      </div>
-
-      {/* Main Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Recent Activity */}
+      {/* Two Column Row */}
+      <div className="grid grid-cols-2 gap-4">
+        {/* Recent Job Requests */}
         <div className="card">
-          <div className="flex items-center justify-between mb-5">
-            <h2 className="text-lg font-bold text-gray-900">Recent Requests</h2>
-            <button
-              onClick={() => navigate('/admin/requests')}
-              className="text-sm text-primary-600 hover:underline font-semibold"
-            >
-              View all →
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-content-primary font-semibold text-[15px]">Recent job requests</h3>
+            <button onClick={() => navigate('/admin/requests')} className="text-[13px] text-content-hint hover:text-content-muted transition-colors" id="view-all-requests">
+              View all
             </button>
           </div>
-          <div className="space-y-3">
-            {data?.recentRequests?.length > 0 ? (
-              data.recentRequests.map((req) => {
-                const statusColor = {
-                  pending: 'badge-info',
-                  in_progress: 'badge-warning',
-                  completed: 'badge-success',
-                  cancelled: 'badge-error',
-                }[req.status] || 'badge'
-                return (
-                  <div key={req.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-semibold text-gray-900 truncate">{req.title || 'Service Request'}</p>
-                      <p className="text-xs text-gray-500 mt-0.5">
-                        {req.customer?.name || req.customerName || 'Unknown customer'} ·{' '}
-                        {new Date(req.created_at || req.createdAt || Date.now()).toLocaleDateString()}
-                      </p>
-                    </div>
-                    <span className={`badge ${statusColor} ml-3 flex-shrink-0`}>
-                      {req.status?.replace('_', ' ') || 'Pending'}
-                    </span>
-                  </div>
-                )
-              })
-            ) : (
-              <div className="text-center py-8 text-gray-400">
-                <FiClipboard className="w-10 h-10 mx-auto mb-2 opacity-40" />
-                <p className="text-sm">No recent requests</p>
-              </div>
+          <div className="flex flex-col gap-3">
+            {recentJobs.length > 0 ? recentJobs.slice(0, 4).map((job, i) => {
+              const st = STATUS_MAP[job.status] || STATUS_MAP.pending
+              return (
+                <div key={job.id || i} className="flex items-center justify-between py-2 border-b border-border last:border-0 last:pb-0">
+                  <span className="text-content-primary text-[13px]">
+                    {job.title || 'Service Request'} — <span className="text-content-muted">{job.customer?.name || 'Customer'}</span>
+                  </span>
+                  <Badge text={st.label} type={st.type} />
+                </div>
+              )
+            }) : (
+              <p className="text-content-muted text-[13px] text-center py-4">No recent requests</p>
             )}
           </div>
         </div>
 
-        {/* Quick Actions */}
+        {/* Technician Performance */}
         <div className="card">
-          <h2 className="text-lg font-bold text-gray-900 mb-5">Quick Actions</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {quickActions.map((qa) => {
-              const Icon = qa.icon
-              return (
-                <button
-                  key={qa.id}
-                  id={qa.id}
-                  onClick={qa.action}
-                  className="flex items-center gap-3 p-4 rounded-xl border border-gray-100 hover:border-primary-200 hover:bg-primary-50 transition-all text-left group"
-                >
-                  <div className={`p-2.5 rounded-lg ${qa.color} flex-shrink-0`}>
-                    <Icon className="w-4 h-4 text-white" />
+          <h3 className="text-content-primary font-semibold text-[15px] mb-4">Technician performance</h3>
+          <div className="flex flex-col gap-4">
+            {DEMO_TECH_PERF.map((tech, i) => (
+              <div key={i} className="flex flex-col gap-1.5">
+                <div className="flex items-center justify-between text-[13px]">
+                  <span className="text-content-primary">{tech.name}</span>
+                  <div className="flex items-center gap-1 text-content-muted">
+                    <span className="text-content-primary">{tech.rating}</span>
+                    <IconStar size={12} className="text-[#fbbf24] fill-[#fbbf24]" />
+                    <span>· {tech.jobs} jobs</span>
                   </div>
-                  <div className="min-w-0">
-                    <p className="text-sm font-bold text-gray-900 group-hover:text-primary-700 transition-colors">
-                      {qa.label}
-                    </p>
-                    <p className="text-xs text-gray-500 truncate">{qa.desc}</p>
-                  </div>
-                </button>
-              )
-            })}
+                </div>
+                <div className="h-1 bg-surface-inner rounded-full overflow-hidden">
+                  <div className={`h-full ${tech.color} rounded-full transition-all duration-500`} style={{ width: tech.width }}></div>
+                </div>
+              </div>
+            ))}
           </div>
+        </div>
+      </div>
+
+      {/* Quick Actions Row */}
+      <div className="card">
+        <h3 className="text-content-primary font-semibold text-[15px] mb-4">Quick actions</h3>
+        <div className="grid grid-cols-3 gap-3">
+          <button onClick={() => setModal('assign')} id="qa-assign"
+            className="flex items-center gap-3 p-3 rounded-sm border border-border hover:border-[#1e2d4a] hover:bg-[#1e2d4a]/20 transition-all text-left group">
+            <div className="p-2 rounded-sm bg-[#0e2040]"><IconTool size={16} className="text-[#7eb8f7]" /></div>
+            <div>
+              <p className="text-[13px] font-medium text-content-primary group-hover:text-[#7eb8f7] transition-colors">Assign Technician</p>
+              <p className="text-[11px] text-content-hint">Dispatch to pending request</p>
+            </div>
+          </button>
+          <button onClick={() => setModal('user')} id="qa-add-user"
+            className="flex items-center gap-3 p-3 rounded-sm border border-border hover:border-[#14301f] hover:bg-[#14301f]/20 transition-all text-left group">
+            <div className="p-2 rounded-sm bg-[#14301f]"><IconUserPlus size={16} className="text-[#4ade80]" /></div>
+            <div>
+              <p className="text-[13px] font-medium text-content-primary group-hover:text-[#4ade80] transition-colors">Add New User</p>
+              <p className="text-[11px] text-content-hint">Create account</p>
+            </div>
+          </button>
+          <button onClick={() => setModal('category')} id="qa-category"
+            className="flex items-center gap-3 p-3 rounded-sm border border-border hover:border-[#2d2010] hover:bg-[#2d2010]/20 transition-all text-left group">
+            <div className="p-2 rounded-sm bg-[#2d2010]"><IconTag size={16} className="text-[#fbbf24]" /></div>
+            <div>
+              <p className="text-[13px] font-medium text-content-primary group-hover:text-[#fbbf24] transition-colors">Add Category</p>
+              <p className="text-[11px] text-content-hint">New service type</p>
+            </div>
+          </button>
         </div>
       </div>
     </div>

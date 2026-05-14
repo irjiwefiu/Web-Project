@@ -1,9 +1,9 @@
 import React, { useState } from 'react'
-import { FiMail, FiLock, FiUser, FiArrowRight } from 'react-icons/fi'
+import { IconBolt, IconMail, IconLock, IconArrowRight } from '@tabler/icons-react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useDispatch } from 'react-redux'
 import { authAPI } from '../services/api'
-import { loginSuccess, setError } from '../store/slices/authSlice'
+import { loginSuccess } from '../store/slices/authSlice'
 
 export default function Login() {
   const [formData, setFormData] = useState({ email: '', password: '' })
@@ -34,35 +34,35 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-600 to-primary-900 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-page flex items-center justify-center p-4 font-sans">
       <div className="w-full max-w-md">
         {/* Card */}
-        <div className="bg-white rounded-2xl shadow-2xl p-8 animate-fade-in">
+        <div className="bg-surface rounded-md border border-border p-8 animate-fade-in">
           {/* Header */}
           <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-primary-100 rounded-full mb-4">
-              <FiUser className="w-8 h-8 text-primary-600" />
+            <div className="inline-flex items-center justify-center w-14 h-14 bg-[#1e2d4a] rounded-full mb-4">
+              <IconBolt className="w-7 h-7 text-[#7eb8f7] fill-[#7eb8f7]" />
             </div>
-            <h1 className="text-3xl font-bold text-gray-900">Welcome Back</h1>
-            <p className="text-gray-600 mt-2">Sign in to your account</p>
+            <h1 className="text-[22px] font-bold text-content-primary">Welcome to FixrPro</h1>
+            <p className="text-content-muted text-[13px] mt-2">Sign in to your account</p>
           </div>
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-5">
             {/* Email */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
+              <label className="block text-[11px] font-semibold text-content-muted mb-2 uppercase tracking-wider">
                 Email Address
               </label>
               <div className="relative">
-                <FiMail className="absolute left-3 top-3 text-gray-400" />
+                <IconMail size={16} className="absolute left-3 top-3 text-content-hint" />
                 <input
                   type="email"
                   name="email"
                   id="login-email"
                   value={formData.email}
                   onChange={handleChange}
-                  className="input pl-10"
+                  className="input w-full pl-10"
                   placeholder="you@example.com"
                   required
                 />
@@ -71,18 +71,18 @@ export default function Login() {
 
             {/* Password */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
+              <label className="block text-[11px] font-semibold text-content-muted mb-2 uppercase tracking-wider">
                 Password
               </label>
               <div className="relative">
-                <FiLock className="absolute left-3 top-3 text-gray-400" />
+                <IconLock size={16} className="absolute left-3 top-3 text-content-hint" />
                 <input
                   type="password"
                   name="password"
                   id="login-password"
                   value={formData.password}
                   onChange={handleChange}
-                  className="input pl-10"
+                  className="input w-full pl-10"
                   placeholder="••••••••"
                   required
                 />
@@ -91,30 +91,42 @@ export default function Login() {
 
             {/* Error */}
             {error && (
-              <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm">
+              <div className="bg-[#2d1010] border border-[#2d1010] text-[#f87171] px-4 py-3 rounded-sm text-[13px]">
                 {error}
               </div>
             )}
 
             {/* Submit */}
-            <button type="submit" id="login-submit" disabled={loading} className="btn-primary w-full flex items-center justify-center gap-2">
+            <button
+              type="submit"
+              id="login-submit"
+              disabled={loading}
+              className="btn btn-primary w-full py-2.5"
+            >
               {loading ? 'Signing in...' : 'Sign In'}
-              <FiArrowRight />
+              <IconArrowRight size={16} />
             </button>
           </form>
 
           {/* Divider */}
           <div className="my-6 flex items-center gap-4">
-            <div className="flex-1 h-px bg-gray-300"></div>
-            <span className="text-gray-500 text-sm">or</span>
-            <div className="flex-1 h-px bg-gray-300"></div>
+            <div className="flex-1 h-px bg-border"></div>
+            <span className="text-content-hint text-[11px] uppercase tracking-wider">or</span>
+            <div className="flex-1 h-px bg-border"></div>
           </div>
 
           {/* Register Link */}
-          <p className="text-center text-gray-600">
+          <p className="text-center text-content-muted text-[13px]">
             Don't have an account?{' '}
-            <Link to="/register" className="text-primary-600 font-semibold hover:text-primary-700">
+            <Link to="/register" className="text-[#7eb8f7] font-semibold hover:underline">
               Sign Up
+            </Link>
+          </p>
+
+          {/* Demo Link */}
+          <p className="text-center text-content-hint text-[11px] mt-4">
+            <Link to="/demo" className="hover:text-content-muted transition-colors">
+              View Demo →
             </Link>
           </p>
         </div>

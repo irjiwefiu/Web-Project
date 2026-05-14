@@ -6,7 +6,9 @@ const ServiceRequest = new EntitySchema({
   columns: {
     id: { primary: true, type: "int", generated: true },
     title: { type: "varchar" },
-    description: { type: "text" }
+    description: { type: "text" },
+    price: { type: "decimal", precision: 10, scale: 2, nullable: true },
+    payment_status: { type: "varchar", default: "unpaid" }
   },
   relations: {
     customer: {

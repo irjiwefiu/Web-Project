@@ -1,21 +1,28 @@
 import React, { useState, useEffect } from 'react'
-import { FiPlus, FiSearch, FiX, FiMapPin, FiClock } from 'react-icons/fi'
+import { IconPlus, IconSearch, IconX, IconMapPin, IconClock, IconClipboard } from '@tabler/icons-react'
 import { requestAPI, categoryAPI } from '../services/api'
+
+const Badge = ({ text, type }) => {
+  const styles = {
+    success: 'bg-[#14301f] text-[#4ade80]',
+    warning: 'bg-[#2d2010] text-[#fbbf24]',
+    info: 'bg-[#0e2040] text-[#7eb8f7]',
+    danger: 'bg-[#2d1010] text-[#f87171]',
+  }
+  return (
+    <span className={`px-2.5 py-1 rounded-sm text-[11px] uppercase tracking-wider font-semibold ${styles[type] || styles.info}`}>
+      {text}
+    </span>
+  )
+}
 
 function RequestForm({ onSubmit, onClose }) {
   const [categories, setCategories] = useState([])
   const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    categoryId: '',
-    location: '',
-    preferred_time: '',
-    urgency: 'medium',
+    title: '', description: '', categoryId: '', location: '', preferred_time: '',
   })
 
-  useEffect(() => {
-    loadCategories()
-  }, [])
+  useEffect(() => { loadCategories() }, [])
 
   const loadCategories = async () => {
     try {
@@ -36,61 +43,46 @@ function RequestForm({ onSubmit, onClose }) {
     }
   }
 
+  const set = (field) => (e) => setFormData(p => ({ ...p, [field]: e.target.value }))
+
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6 animate-slide-up">
+    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+      <div className="bg-surface rounded-md border border-border shadow-2xl max-w-md w-full p-6 animate-slide-up">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-gray-900">New Request</h2>
-          <button onClick={onClose} className="p-1 hover:bg-gray-100 rounded-lg">
-            <FiX className="w-6 h-6" />
+          <h2 className="text-[15px] font-bold text-content-primary">New Service Request</h2>
+          <button onClick={onClose} className="text-content-muted hover:text-content-primary">
+            <IconX size={18} />
           </button>
         </div>
-
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1">Title</label>
-            <input type="text" className="input" placeholder="Service title" value={formData.title}
-              onChange={(e) => setFormData((prev) => ({ ...prev, title: e.target.value }))} required />
+            <label className="block text-[11px] font-semibold text-content-muted mb-1.5 uppercase tracking-wider">Title</label>
+            <input type="text" className="input w-full" placeholder="Service title" value={formData.title} onChange={set('title')} required />
           </div>
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1">Description</label>
-            <textarea className="input" placeholder="Describe your issue..." rows="3" value={formData.description}
-              onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))} required />
+            <label className="block text-[11px] font-semibold text-content-muted mb-1.5 uppercase tracking-wider">Description</label>
+            <textarea className="input w-full h-20 resize-none" placeholder="Describe your issue..." value={formData.description} onChange={set('description')} required />
           </div>
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1">Category</label>
-            <select className="input" value={formData.categoryId}
-              onChange={(e) => setFormData((prev) => ({ ...prev, categoryId: e.target.value }))} required>
+            <label className="block text-[11px] font-semibold text-content-muted mb-1.5 uppercase tracking-wider">Category</label>
+            <select className="input w-full" value={formData.categoryId} onChange={set('categoryId')} required>
               <option value="">Select category</option>
-              {categories.map((cat) => (
-                <option key={cat.id} value={cat.id}>{cat.name}</option>
-              ))}
+              {categories.map(cat => <option key={cat.id} value={cat.id}>{cat.name}</option>)}
             </select>
           </div>
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1">Location</label>
-            <input type="text" className="input" placeholder="Service location" value={formData.location}
-              onChange={(e) => setFormData((prev) => ({ ...prev, location: e.target.value }))} required />
+            <label className="block text-[11px] font-semibold text-content-muted mb-1.5 uppercase tracking-wider">Location</label>
+            <input type="text" className="input w-full" placeholder="Service location" value={formData.location} onChange={set('location')} required />
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-3">
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">Preferred Date</label>
-              <input type="date" className="input" value={formData.preferred_time}
-                onChange={(e) => setFormData((prev) => ({ ...prev, preferred_time: e.target.value }))} />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">Urgency</label>
-              <select className="input" value={formData.urgency}
-                onChange={(e) => setFormData((prev) => ({ ...prev, urgency: e.target.value }))}>
-                <option value="low">Low</option>
-                <option value="medium">Medium</option>
-                <option value="high">High</option>
-              </select>
+              <label className="block text-[11px] font-semibold text-content-muted mb-1.5 uppercase tracking-wider">Preferred Date</label>
+              <input type="date" className="input w-full" value={formData.preferred_time} onChange={set('preferred_time')} />
             </div>
           </div>
-          <div className="flex gap-3 pt-4">
-            <button type="button" onClick={onClose} className="btn-secondary flex-1">Cancel</button>
-            <button type="submit" className="btn-primary flex-1">Create Request</button>
+          <div className="flex gap-3 pt-2">
+            <button type="button" onClick={onClose} className="btn btn-outline flex-1">Cancel</button>
+            <button type="submit" className="btn btn-primary flex-1">Create Request</button>
           </div>
         </form>
       </div>
@@ -103,9 +95,7 @@ export default function CustomerRequests() {
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
 
-  useEffect(() => {
-    loadRequests()
-  }, [])
+  useEffect(() => { loadRequests() }, [])
 
   const loadRequests = async () => {
     try {
@@ -132,72 +122,76 @@ export default function CustomerRequests() {
     setShowForm(false)
   }
 
+  const STATUS_MAP = {
+    pending: { label: 'Pending', type: 'warning' },
+    requested: { label: 'Pending', type: 'warning' },
+    assigned: { label: 'Assigned', type: 'info' },
+    in_progress: { label: 'In progress', type: 'info' },
+    completed: { label: 'Completed', type: 'success' },
+    cancelled: { label: 'Cancelled', type: 'danger' },
+  }
+
   return (
-    <div className="p-8">
+    <div className="flex flex-col gap-6 animate-fade-in">
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">My Service Requests</h1>
-          <p className="text-gray-600 mt-2">Track all your service bookings</p>
+          <h1 className="text-[20px] font-bold text-content-primary">My Service Requests</h1>
+          <p className="text-content-muted text-[13px] mt-1">Track all your service bookings</p>
         </div>
-        <button onClick={() => setShowForm(true)} className="btn-primary flex items-center gap-2">
-          <FiPlus className="w-5 h-5" /> New Request
+        <button onClick={() => setShowForm(true)} className="btn btn-primary" id="new-request-btn">
+          <IconPlus size={16} /> New Request
         </button>
       </div>
 
       {/* Request List */}
       {loading ? (
-        <div className="text-center py-12">Loading requests...</div>
+        <div className="flex items-center justify-center h-32">
+          <div className="animate-spin w-8 h-8 border-2 border-[#7eb8f7] border-t-transparent rounded-full" />
+        </div>
       ) : requests.length > 0 ? (
-        <div className="space-y-4">
-          {requests.map((request) => (
-            <div key={request.id} className="card hover:shadow-lg transition-shadow">
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <h3 className="text-lg font-semibold text-gray-900">{request.title}</h3>
-                  <p className="text-gray-600 mt-2">{request.description}</p>
-                  <div className="flex items-center gap-4 mt-4 text-sm text-gray-600">
-                    <div className="flex items-center gap-1">
-                      <FiMapPin className="w-4 h-4" /> {request.location}
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <FiClock className="w-4 h-4" /> {new Date(request.createdAt || request.created_at).toLocaleDateString()}
+        <div className="flex flex-col gap-3">
+          {requests.map((request) => {
+            const st = STATUS_MAP[request.status] || STATUS_MAP.pending
+            return (
+              <div key={request.id} className="card">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <h3 className="text-[15px] font-semibold text-content-primary">{request.title}</h3>
+                    <p className="text-content-muted text-[13px] mt-1">{request.description}</p>
+                    <div className="flex items-center gap-4 mt-3 text-[11px] text-content-muted">
+                      <div className="flex items-center gap-1">
+                        <IconMapPin size={12} /> {request.location}
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <IconClock size={12} /> {new Date(request.createdAt || request.created_at || Date.now()).toLocaleDateString()}
+                      </div>
                     </div>
                   </div>
+                  <Badge text={st.label} type={st.type} />
                 </div>
-                <div className="text-right">
-                  <span className={`badge ${
-                    request.status === 'pending' || request.status === 'requested' || request.status === 'assigned' ? 'badge-info'
-                      : request.status === 'in_progress' ? 'badge-warning'
-                      : request.status === 'completed' ? 'badge-success'
-                      : 'badge'
-                  }`}>{request.status?.replace('_', ' ')}</span>
-                  <p className="text-sm text-gray-600 mt-2 capitalize">Urgency: {request.urgency}</p>
+                <div className="mt-4 flex gap-2">
+                  <button className="btn btn-outline text-[12px] py-1.5">View Details</button>
+                  {(request.status === 'pending' || request.status === 'requested') && (
+                    <button onClick={() => cancelRequest(request.id)} className="btn btn-danger text-[12px] py-1.5">Cancel</button>
+                  )}
                 </div>
               </div>
-              <div className="mt-4 flex gap-2">
-                <button className="btn-secondary text-sm">View Details</button>
-                {(request.status === 'pending' || request.status === 'requested') && (
-                  <button onClick={() => cancelRequest(request.id)} className="btn-secondary text-sm">Cancel</button>
-                )}
-              </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       ) : (
         <div className="card text-center py-12">
-          <FiSearch className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-          <p className="text-gray-600">No requests yet</p>
-          <button onClick={() => setShowForm(true)} className="btn-primary mt-4">
+          <IconClipboard size={40} className="text-content-hint mx-auto mb-4" />
+          <p className="text-content-muted text-[13px]">No requests yet</p>
+          <button onClick={() => setShowForm(true)} className="btn btn-primary mt-4 mx-auto">
             Create Your First Request
           </button>
         </div>
       )}
 
       {/* Modal */}
-      {showForm && (
-        <RequestForm onSubmit={handleCreateRequest} onClose={() => setShowForm(false)} />
-      )}
+      {showForm && <RequestForm onSubmit={handleCreateRequest} onClose={() => setShowForm(false)} />}
     </div>
   )
 }

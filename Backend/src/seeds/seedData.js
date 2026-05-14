@@ -143,6 +143,8 @@ export const serviceRequests = [
     description: "There is a leak in the roof near the chimney area causing water damage on ceiling.",
     categoryName: "Roofing",
     customerEmail: "carol@example.com",
+    price: 350.00,
+    payment_status: "unpaid"
   },
   {
     title: "Bathroom faucet replacement",
@@ -163,6 +165,8 @@ export const serviceRequests = [
     description: "Noticed cockroaches in kitchen and bathrooms. Need full house treatment.",
     categoryName: "Pest Control",
     customerEmail: "daniel@example.com",
+    price: 120.00,
+    payment_status: "paid"
   },
 
   // Eva's requests

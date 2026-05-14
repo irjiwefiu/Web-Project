@@ -25,6 +25,18 @@ router.post(
 );
 
 /**
+ * GET /reviews
+ * Get all reviews (Admin only)
+ * Protected: Admin only
+ */
+router.get(
+    "/",
+    authenticateUser,
+    authorizeRoles("admin"),
+    ReviewController.getAllReviewsController
+);
+
+/**
  * GET /reviews/request/:requestId
  * Get review for a specific service request
  * Protected: authenticateUser
@@ -74,12 +86,12 @@ router.patch(
 /**
  * DELETE /reviews/:id
  * Delete a review
- * Protected: Customer only (owner of the review)
+ * Protected: Customer (owner) or Admin
  */
 router.delete(
     "/:id",
     authenticateUser,
-    authorizeRoles("customer"),
+    authorizeRoles("customer", "admin"),
     ReviewController.deleteReviewController
 );
 
