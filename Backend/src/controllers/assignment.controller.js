@@ -194,6 +194,25 @@ const AssignmentController = {
         } catch (error) {
             next(error);
         }
+    },
+
+    /**
+     * getMyAssignmentsController
+     * GET /assignments/my-assignments
+     * Returns assignments for the logged-in technician
+     */
+    async getMyAssignmentsController(req, res, next) {
+        try {
+            const assignments = await AssignmentService.getTechnicianAssignments(req.user.id);
+
+            return res.status(200).json({
+                success: true,
+                count: assignments.length,
+                data: assignments
+            });
+        } catch (error) {
+            next(error);
+        }
     }
 };
 

@@ -1,5 +1,6 @@
 import AppDataSource from "../config/data-source.js";
 import bcrypt from "bcrypt";
+import { ensureColumns } from "../config/ensureColumns.js";
 import Role from "../entities/Role.js";
 import User from "../entities/User.js";
 import TechnicianProfile from "../entities/TechnicianProfile.js";
@@ -18,23 +19,6 @@ import {
   statusHistory,
   reviews,
 } from "./seedData.js";
-
-async function ensureColumns(manager) {
-  // Add name column to users if it doesn't exist
-  await manager.query(`
-    ALTER TABLE users
-      ADD COLUMN IF NOT EXISTS name VARCHAR,
-      ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT now();
-  `);
-  // Add extra technician_profiles columns if they don't exist
-  await manager.query(`
-    ALTER TABLE technician_profiles
-      ADD COLUMN IF NOT EXISTS availability_status VARCHAR DEFAULT 'offline',
-      ADD COLUMN IF NOT EXISTS rating FLOAT DEFAULT 0,
-      ADD COLUMN IF NOT EXISTS total_jobs INT DEFAULT 0,
-      ADD COLUMN IF NOT EXISTS service_area VARCHAR;
-  `);
-}
 
 async function seed() {
   const dataSource = await AppDataSource.initialize();
@@ -91,6 +75,10 @@ async function seed() {
     const request = await manager.save(ServiceRequest, {
       title: requestData.title,
       description: requestData.description,
+      price: requestData.price || 0,
+      location: requestData.location || null,
+      urgency: requestData.urgency || "medium",
+      preferred_time: requestData.preferred_time || null,
       category: categoryMap.get(requestData.categoryName),
       customer: userMap.get(requestData.customerEmail),
     });

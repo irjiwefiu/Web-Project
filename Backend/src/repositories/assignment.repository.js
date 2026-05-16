@@ -1,12 +1,15 @@
 import AppDataSource from "../config/data-source.js";
 import Assignment from "../entities/Assignment.js";
-import { Not, IsNull } from "typeorm";
+import { Not, IsNull, In } from "typeorm";
 
 const AssignmentRepository = AppDataSource.getRepository(Assignment).extend({
-    
-    // 1. Create a new assignment
+
+    // 1. Create a new assignment (application)
     async createAssignment(data) {
-        const assignment = this.create(data);
+        const assignment = this.create({
+            ...data,
+            status: data.status || "applied",
+        });
         return await this.save(assignment);
     },
 
@@ -27,11 +30,11 @@ const AssignmentRepository = AppDataSource.getRepository(Assignment).extend({
         });
     },
 
-    // 4. Get all assignments for a specific technician
+    // 4. Get all assignments for a specific technician (all statuses)
     async getAssignmentsByTechnician(technicianId) {
         return await this.find({
             where: { technician: { id: technicianId } },
-            relations: ["request", "request.category"],
+            relations: ["request", "request.category", "request.customer"],
             order: { assigned_at: "DESC" }
         });
     },
@@ -47,27 +50,32 @@ const AssignmentRepository = AppDataSource.getRepository(Assignment).extend({
         });
     },
 
-    // 5. Get the most recent accepted assignment for a request
+    // 5. Get the active (accepted) assignment for a request
     async getActiveAssignmentByRequest(requestId) {
         return await this.findOne({
-            where: { request: { id: requestId }, assigned_by: { id: Not(IsNull()) } },
+            where: {
+                request: { id: requestId },
+                status: "accepted",
+            },
             relations: ["technician"],
             order: { assigned_at: "DESC" }
         });
     },
 
-    // 6. Get all pending applications for a request
+    // 6. Get all pending applications for a request (status = 'applied')
     async getRequestApplications(requestId) {
         return await this.find({
-            where: { request: { id: requestId }, assigned_by: null },
-            relations: ["technician"],
+            where: {
+                request: { id: requestId },
+                status: "applied",
+            },
+            relations: ["technician", "technician.technician_profile"],
             order: { assigned_at: "DESC" }
         });
     },
 
     // 7. Get technician schedule for a specific date
     async getTechnicianAssignmentsByDate(technicianId, dateString) {
-        // dateString format: 'YYYY-MM-DD'
         return await this.createQueryBuilder("assignment")
             .leftJoinAndSelect("assignment.request", "request")
             .where("assignment.technician_id = :technicianId", { technicianId })
@@ -75,21 +83,52 @@ const AssignmentRepository = AppDataSource.getRepository(Assignment).extend({
             .getMany();
     },
 
-    // 7. Delete an assignment (Re-assignment or Cancellation logic)
+    // 8. Delete an assignment
     async deleteAssignment(id) {
         return await this.delete(id);
     },
 
-    // Existing check for technician conflicts
+    // 9. Check for technician conflicts
     async isTechnicianBusy(technicianId, preferredTime) {
         const conflict = await this.createQueryBuilder("assignment")
             .leftJoin("assignment.request", "request")
             .where("assignment.technician_id = :technicianId", { technicianId })
             .andWhere("request.preferred_time = :preferredTime", { preferredTime })
+            .andWhere("assignment.status IN (:...statuses)", { statuses: ["accepted", "applied"] })
             .getOne();
 
         return !!conflict;
-    }
+    },
+
+    // 10. Check if technician already applied to a request (any status)
+    async findExistingApplication(requestId, technicianId) {
+        return await this.findOne({
+            where: {
+                request: { id: requestId },
+                technician: { id: technicianId },
+            },
+        });
+    },
+
+    // 11. Get assignments by technician filtered by statuses
+    async getTechnicianAssignmentsByStatus(technicianId, statuses) {
+        return await this.find({
+            where: {
+                technician: { id: technicianId },
+                status: In(statuses),
+            },
+            relations: ["request", "request.category", "request.customer"],
+            order: { assigned_at: "DESC" }
+        });
+    },
+
+    // 12. Bulk update assignment statuses for a request
+    async bulkUpdateStatusByRequest(requestId, fromStatus, toStatus) {
+        return await this.update(
+            { request: { id: requestId }, status: fromStatus },
+            { status: toStatus }
+        );
+    },
 });
 
 export default AssignmentRepository;

@@ -31,11 +31,14 @@ const TechnicianRepository = AppDataSource.getRepository(TechnicianProfile).exte
 
     // 4. Update Availability Status
     // status: "available" | "busy" | "offline"
-    async updateTechnicianAvailability(id, status) {
-        return await this.save({
-            id: id,
-            availability_status: status
+    // userId is the User's id, not the profile id
+    async updateTechnicianAvailability(userId, status) {
+        const profile = await this.findOne({
+            where: { user: { id: userId } }
         });
+        if (!profile) throw new Error("Technician profile not found.");
+        profile.availability_status = status;
+        return await this.save(profile);
     },
 
     // 5. Get Available Technicians

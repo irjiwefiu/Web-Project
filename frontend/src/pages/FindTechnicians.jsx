@@ -1,8 +1,134 @@
 import React, { useState, useEffect, useMemo } from 'react'
-import { FiSearch, FiMapPin, FiDollarSign, FiStar, FiChevronLeft, FiChevronRight, FiArrowUp, FiArrowDown } from 'react-icons/fi'
-import { technicianAPI } from '../services/api'
+import { FiSearch, FiMapPin, FiDollarSign, FiStar, FiChevronLeft, FiChevronRight, FiArrowUp, FiArrowDown, FiX, FiCalendar } from 'react-icons/fi'
+import { technicianAPI, requestAPI, categoryAPI } from '../services/api'
 
-function TechnicianCard({ technician }) {
+function Toast({ message, type, onClose }) {
+  useEffect(() => {
+    const timer = setTimeout(onClose, 3000)
+    return () => clearTimeout(timer)
+  }, [onClose])
+
+  return (
+    <div className={`toast ${type === 'success' ? 'toast-success' : type === 'error' ? 'toast-error' : ''}`}>
+      {message}
+    </div>
+  )
+}
+
+function BookModal({ technician, onClose, onSuccess }) {
+  const [categories, setCategories] = useState([])
+  const [submitting, setSubmitting] = useState(false)
+  const [formData, setFormData] = useState({
+    title: '',
+    description: '',
+    categoryId: '',
+    location: '',
+    preferred_time: '',
+    urgency: 'medium',
+    price: '',
+  })
+
+  useEffect(() => {
+    loadCategories()
+  }, [])
+
+  const loadCategories = async () => {
+    try {
+      const response = await categoryAPI.getAll()
+      setCategories(response.data || [])
+    } catch (error) {
+      console.error('Failed to load categories:', error)
+    }
+  }
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    setSubmitting(true)
+    try {
+      await requestAPI.create(formData)
+      onSuccess(`Service request created! ${technician.name || 'Technician'} will be notified.`)
+      onClose()
+    } catch (error) {
+      console.error('Failed to create request:', error)
+      onSuccess('Failed to create request: ' + (error.message || 'Unknown error'))
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  return (
+    <div className="modal-overlay">
+      <div className="modal-content max-w-md w-full max-h-[90vh] overflow-y-auto">
+        <div className="modal-header">
+          <div>
+            <h2 className="text-2xl font-bold text-content-primary">Book Service</h2>
+            <p className="text-sm text-content-body mt-1">Request service from {technician.name}</p>
+          </div>
+          <button onClick={onClose} className="btn-icon">
+            <FiX className="w-5 h-5" />
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="label">Service Title</label>
+            <input type="text" className="input" placeholder="e.g., AC Repair" value={formData.title}
+              onChange={(e) => setFormData((prev) => ({ ...prev, title: e.target.value }))} required />
+          </div>
+          <div>
+            <label className="label">Description</label>
+            <textarea className="input" placeholder="Describe what you need..." rows="3" value={formData.description}
+              onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))} required />
+          </div>
+          <div>
+            <label className="label">Category</label>
+            <select className="input" value={formData.categoryId}
+              onChange={(e) => setFormData((prev) => ({ ...prev, categoryId: e.target.value }))} required>
+              <option value="">Select category</option>
+              {categories.map((cat) => (
+                <option key={cat.id} value={cat.id}>{cat.name}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="label">Location</label>
+            <input type="text" className="input" placeholder="Your address" value={formData.location}
+              onChange={(e) => setFormData((prev) => ({ ...prev, location: e.target.value }))} required />
+          </div>
+          <div>
+            <label className="label">Estimated Price ($)</label>
+            <input type="number" className="input" placeholder="0.00" min="0" step="0.01" value={formData.price}
+              onChange={(e) => setFormData((prev) => ({ ...prev, price: e.target.value }))} />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="label">Preferred Date</label>
+              <input type="date" className="input" value={formData.preferred_time}
+                onChange={(e) => setFormData((prev) => ({ ...prev, preferred_time: e.target.value }))} />
+            </div>
+            <div>
+              <label className="label">Urgency</label>
+              <select className="input" value={formData.urgency}
+                onChange={(e) => setFormData((prev) => ({ ...prev, urgency: e.target.value }))}>
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+              </select>
+            </div>
+          </div>
+          <div className="flex gap-3 pt-4">
+            <button type="button" onClick={onClose} className="btn-secondary flex-1">Cancel</button>
+            <button type="submit" className="btn-accent flex-1" disabled={submitting}>
+              {submitting ? 'Creating...' : 'Create Request'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  )
+}
+
+function TechnicianCard({ technician, onBook }) {
   return (
     <div className="card hover:shadow-xl transition-shadow">
       <div className="flex items-start gap-4">
@@ -12,24 +138,24 @@ function TechnicianCard({ technician }) {
           className="w-16 h-16 rounded-full"
         />
         <div className="flex-1">
-          <h3 className="font-semibold text-gray-900">{technician.name}</h3>
+          <h3 className="font-semibold text-content-primary">{technician.name}</h3>
           <div className="flex items-center gap-2 mt-1">
             <FiStar className="w-4 h-4 text-yellow-500" />
-            <span className="text-sm font-semibold text-gray-900">{technician.rating || 4.5}</span>
+            <span className="text-sm font-semibold text-content-primary">{technician.rating || 'N/A'}</span>
           </div>
-          <div className="flex items-center gap-2 text-sm text-gray-600 mt-2">
+          <div className="flex items-center gap-2 text-sm text-content-body mt-2">
             <FiMapPin className="w-4 h-4" />
-            <span>{technician.area || 'N/A'}</span>
+            <span>{technician.area || technician.service_area || 'N/A'}</span>
           </div>
-          <div className="flex items-center gap-2 text-sm text-gray-600">
+          <div className="flex items-center gap-2 text-sm text-content-body">
             <FiDollarSign className="w-4 h-4" />
-            <span>${technician.hourlyRate || 0}/hr</span>
+            <span>${technician.hourlyRate || technician.hourly_rate || 0}/hr</span>
           </div>
         </div>
       </div>
-      <div className="mt-4 pt-4 border-t flex gap-2">
+      <div className="mt-4 pt-4 border-t border-border flex gap-2">
         <button className="flex-1 btn-secondary text-sm">View Profile</button>
-        <button className="flex-1 btn-primary text-sm">Book Now</button>
+        <button onClick={() => onBook(technician)} className="flex-1 btn-accent text-sm">Book Now</button>
       </div>
     </div>
   )
@@ -41,6 +167,8 @@ export default function FindTechnicians() {
   const [filters, setFilters] = useState({ search: '', area: '', rating: '' })
   const [sortConfig, setSortConfig] = useState({ key: 'name', direction: 'asc' })
   const [currentPage, setCurrentPage] = useState(1)
+  const [bookTechnician, setBookTechnician] = useState(null)
+  const [toast, setToast] = useState(null)
   const itemsPerPage = 6
 
   useEffect(() => {
@@ -50,12 +178,30 @@ export default function FindTechnicians() {
   const fetchTechnicians = async () => {
     try {
       const response = await technicianAPI.getAvailable()
-      setTechnicians(response.data || [])
+      // API returns TechnicianProfile objects with nested user; flatten for UI
+      const raw = response.data || []
+      const mapped = raw.map((profile) => ({
+        id: profile.id,
+        name: profile.user?.name || profile.user?.username || 'Unknown',
+        email: profile.user?.email || '',
+        rating: profile.rating || 0,
+        area: profile.service_area || 'N/A',
+        hourlyRate: profile.hourly_rate || 0,
+        bio: profile.bio || '',
+        skills: profile.skills || [],
+        availability_status: profile.availability_status || 'offline',
+        total_jobs: profile.total_jobs || 0,
+      }))
+      setTechnicians(mapped)
     } catch (error) {
       console.error('Failed to fetch technicians:', error)
     } finally {
       setLoading(false)
     }
+  }
+
+  const showToast = (msg, type = 'success') => {
+    setToast({ message: msg, type })
   }
 
   // Search + Filter
@@ -65,11 +211,14 @@ export default function FindTechnicians() {
     if (filters.search) {
       const term = filters.search.toLowerCase()
       result = result.filter((t) =>
-        t.name?.toLowerCase().includes(term) || t.area?.toLowerCase().includes(term)
+        (t.name || '').toLowerCase().includes(term) ||
+        (t.area || t.service_area || '').toLowerCase().includes(term)
       )
     }
     if (filters.area) {
-      result = result.filter((t) => t.area?.toLowerCase().includes(filters.area.toLowerCase()))
+      result = result.filter((t) =>
+        (t.area || t.service_area || '').toLowerCase().includes(filters.area.toLowerCase())
+      )
     }
     if (filters.rating) {
       result = result.filter((t) => (t.rating || 0) >= Number(filters.rating))
@@ -119,17 +268,20 @@ export default function FindTechnicians() {
 
   return (
     <div className="p-8">
+      {/* Toast */}
+      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
+
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Find Technicians</h1>
-        <p className="text-gray-600 mt-2">Browse available service providers</p>
+        <h1 className="text-3xl font-bold text-content-primary">Find Technicians</h1>
+        <p className="text-content-body mt-2">Browse available service providers and book instantly</p>
       </div>
 
       {/* Search, Filter & Sort Controls */}
       <div className="card mb-8">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="relative">
-            <FiSearch className="absolute left-3 top-3 text-gray-400" />
+            <FiSearch className="absolute left-3 top-3 text-content-muted" />
             <input
               type="text" id="tech-search" placeholder="Search by name or area..."
               className="input pl-10" value={filters.search}
@@ -137,7 +289,7 @@ export default function FindTechnicians() {
             />
           </div>
           <div className="relative">
-            <FiMapPin className="absolute left-3 top-3 text-gray-400" />
+            <FiMapPin className="absolute left-3 top-3 text-content-muted" />
             <input
               type="text" id="tech-area-filter" placeholder="Filter by area..."
               className="input pl-10" value={filters.area}
@@ -170,19 +322,22 @@ export default function FindTechnicians() {
             </select>
           </div>
         </div>
-        <div className="mt-3 text-sm text-gray-500">
+        <div className="mt-3 text-sm text-content-muted">
           Showing {paginatedTechnicians.length} of {sortedTechnicians.length} technicians
         </div>
       </div>
 
       {/* Technicians Grid */}
       {loading ? (
-        <div className="text-center py-12">Loading technicians...</div>
+        <div className="text-center py-12">
+          <div className="w-10 h-10 border-4 border-[#7eb8f7] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-content-body">Loading technicians...</p>
+        </div>
       ) : paginatedTechnicians.length > 0 ? (
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {paginatedTechnicians.map((tech) => (
-              <TechnicianCard key={tech.id} technician={tech} />
+              <TechnicianCard key={tech.id} technician={tech} onBook={setBookTechnician} />
             ))}
           </div>
 
@@ -202,10 +357,10 @@ export default function FindTechnicians() {
                   <button
                     key={page}
                     onClick={() => setCurrentPage(page)}
-                    className={`w-10 h-10 rounded-lg font-semibold transition-colors ${
+                    className={`w-10 h-10 rounded-lg font-semibold transition-colors cursor-pointer ${
                       currentPage === page
-                        ? 'bg-primary-600 text-white'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        ? 'bg-[#1e2d4a] text-[#7eb8f7]'
+                        : 'bg-surface-inner text-content-body hover:bg-[#2a2d3d]'
                     }`}
                   >
                     {page}
@@ -225,8 +380,17 @@ export default function FindTechnicians() {
         </>
       ) : (
         <div className="card text-center py-12">
-          <p className="text-gray-600">No technicians found matching your criteria</p>
+          <p className="text-content-body">No technicians found matching your criteria</p>
         </div>
+      )}
+
+      {/* Book Modal */}
+      {bookTechnician && (
+        <BookModal
+          technician={bookTechnician}
+          onClose={() => setBookTechnician(null)}
+          onSuccess={(msg) => showToast(msg)}
+        />
       )}
     </div>
   )

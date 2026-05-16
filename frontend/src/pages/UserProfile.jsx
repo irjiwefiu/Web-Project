@@ -45,8 +45,8 @@ export default function UserProfile() {
   return (
     <div className="p-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">My Profile</h1>
-        <p className="text-gray-600 mt-2">Manage your account settings</p>
+        <h1 className="text-3xl font-bold text-content-primary">My Profile</h1>
+        <p className="text-content-body mt-2">Manage your account settings</p>
       </div>
 
       <div className="max-w-2xl">
@@ -58,16 +58,16 @@ export default function UserProfile() {
               className="w-20 h-20 rounded-full"
             />
             <div>
-              <h2 className="text-xl font-bold text-gray-900">{user?.name}</h2>
-              <p className="text-gray-600 capitalize">{user?.role}</p>
+              <h2 className="text-xl font-bold text-content-primary">{user?.name}</h2>
+              <p className="text-content-body capitalize">{user?.role}</p>
             </div>
           </div>
 
           <form onSubmit={handleSave} className="space-y-6">
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Full Name</label>
-              <div className="relative">
-                <FiUser className="absolute left-3 top-3 text-gray-400" />
+              <label className="label">Full Name</label>
+              <div className="input-wrapper">
+                <FiUser className="input-icon" />
                 <input
                   type="text" id="profile-name" className="input pl-10"
                   value={profile?.name || ''}
@@ -77,9 +77,9 @@ export default function UserProfile() {
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Email</label>
-              <div className="relative">
-                <FiMail className="absolute left-3 top-3 text-gray-400" />
+              <label className="label">Email</label>
+              <div className="input-wrapper">
+                <FiMail className="input-icon" />
                 <input
                   type="email" id="profile-email" className="input pl-10"
                   value={profile?.email || ''} disabled
@@ -88,8 +88,8 @@ export default function UserProfile() {
             </div>
 
             {message && (
-              <div className={`px-4 py-3 rounded-lg text-sm ${
-                message.includes('success') ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'
+              <div className={`px-4 py-3 rounded-sm text-sm ${
+                message.includes('success') ? 'bg-status-success-bg text-status-success-text' : 'bg-status-danger-bg text-status-danger-text'
               }`}>
                 {message}
               </div>

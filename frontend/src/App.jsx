@@ -103,6 +103,14 @@ export default function App() {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/dashboard/technician/performance"
+          element={
+            <ProtectedRoute allowedRoles={['technician']}>
+              <Layout><TechnicianDashboard /></Layout>
+            </ProtectedRoute>
+          }
+        />
 
         {/* ── Shared Routes ───────────────────────────── */}
         <Route

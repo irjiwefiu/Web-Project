@@ -146,10 +146,22 @@ const ServiceRequestController = {
     async getAvailableServiceRequestsController(req, res, next) {
         try {
             const { category_id } = req.query;
-            const filters = {};
+            const technicianId = req.user.id;
+            const filters = { status: "requested" };
             if (category_id) filters.category_id = category_id;
             const requests = await ServiceRequestService.filterServiceRequests(filters);
-            return res.status(200).json({ success: true, count: requests.length, data: requests });
+
+            // Get IDs of requests the technician has already applied for (any status)
+            const AssignmentRepository = (await import("../repositories/assignment.repository.js")).default;
+            const existingApplications = await AssignmentRepository.find({
+                where: { technician: { id: technicianId } }
+            });
+            const appliedRequestIds = new Set(existingApplications.map((a) => a.request?.id).filter(Boolean));
+
+            // Filter out requests the technician already applied for
+            const filteredRequests = requests.filter((r) => !appliedRequestIds.has(r.id));
+
+            return res.status(200).json({ success: true, count: filteredRequests.length, data: filteredRequests });
         } catch (error) {
             next(error);
         }
@@ -172,6 +184,49 @@ const ServiceRequestController = {
             const { categoryId } = req.params;
             const requests = await ServiceRequestService.filterServiceRequests({ category_id: categoryId });
             return res.status(200).json({ success: true, count: requests.length, data: requests });
+        } catch (error) {
+            next(error);
+        }
+    },
+
+    /**
+     * payForRequestController
+     * PATCH /requests/:id/pay
+     * Protected: Customer only
+     * Marks a completed service request as paid
+     */
+    async payForRequestController(req, res, next) {
+        try {
+            const { id } = req.params;
+            const userId = req.user.id;
+
+            const ServiceRequestRepository = (await import("../repositories/serviceRequest.repository.js")).default;
+            const request = await ServiceRequestRepository.findServiceRequestById(id);
+
+            if (!request) {
+                return res.status(404).json({ success: false, message: "Service request not found." });
+            }
+            if (request.customer?.id !== userId) {
+                return res.status(403).json({ success: false, message: "Unauthorized. You can only pay for your own requests." });
+            }
+
+            const StatusHistoryRepository = (await import("../repositories/statusHistory.repository.js")).default;
+            const latestStatus = await StatusHistoryRepository.getLatestStatusByRequest(id);
+            if (!latestStatus || latestStatus.status !== "completed") {
+                return res.status(400).json({ success: false, message: "Only completed requests can be paid for." });
+            }
+
+            if (request.is_paid) {
+                return res.status(400).json({ success: false, message: "This request has already been paid." });
+            }
+
+            await ServiceRequestRepository.update(id, { is_paid: true });
+
+            return res.status(200).json({
+                success: true,
+                message: "Payment processed successfully.",
+                data: { request_id: id, amount: parseFloat(request.price || 0).toFixed(2), is_paid: true }
+            });
         } catch (error) {
             next(error);
         }

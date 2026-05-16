@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react'
 import {
   FiTrendingUp, FiUsers, FiCheckCircle, FiClock, FiClipboard,
-  FiX, FiTool, FiTag, FiUserPlus, FiZap, FiAlertCircle
+  FiX, FiTag, FiUserPlus, FiZap, FiAlertCircle, FiDollarSign
 } from 'react-icons/fi'
 import { useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import {
-  dashboardAPI, userAPI, requestAPI, assignmentAPI, categoryAPI
+  dashboardAPI, userAPI, requestAPI, categoryAPI
 } from '../services/api'
 
 function StatCard({ icon: Icon, label, value, color, onClick }) {
@@ -19,134 +19,8 @@ function StatCard({ icon: Icon, label, value, color, onClick }) {
         <Icon className="w-6 h-6 text-white" />
       </div>
       <div>
-        <p className="text-sm text-gray-500">{label}</p>
-        <p className="text-2xl font-bold text-gray-900">{value}</p>
-      </div>
-    </div>
-  )
-}
-
-// ─── Assign Technician Modal ────────────────────────────────────────────────
-function AssignModal({ onClose, onSuccess }) {
-  const [requests, setRequests] = useState([])
-  const [technicians, setTechnicians] = useState([])
-  const [selectedRequest, setSelectedRequest] = useState('')
-  const [selectedTech, setSelectedTech] = useState('')
-  const [loading, setLoading] = useState(true)
-  const [submitting, setSubmitting] = useState(false)
-  const [error, setError] = useState('')
-
-  useEffect(() => {
-    Promise.all([
-      requestAPI.getAll(),
-      userAPI.getUsersByRole('technician'),
-    ]).then(([reqRes, techRes]) => {
-      const pending = (reqRes.data || []).filter(
-        (r) => r.status === 'pending' || r.status === 'requested'
-      )
-      setRequests(pending)
-      setTechnicians(techRes.data || [])
-    }).catch(console.error)
-      .finally(() => setLoading(false))
-  }, [])
-
-  const handleSubmit = async (e) => {
-    e.preventDefault()
-    if (!selectedRequest || !selectedTech) return
-    setSubmitting(true)
-    setError('')
-    try {
-      await assignmentAPI.adminAssign({
-        request_id: selectedRequest,
-        technician_id: selectedTech,
-      })
-      onSuccess('Technician assigned successfully!')
-      onClose()
-    } catch (err) {
-      setError(err.message || 'Assignment failed')
-    } finally {
-      setSubmitting(false)
-    }
-  }
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4">
-        <div className="flex items-center justify-between px-6 py-4 border-b">
-          <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-            <FiTool className="w-5 h-5 text-primary-600" /> Assign Technician
-          </h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
-            <FiX className="w-5 h-5" />
-          </button>
-        </div>
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          {loading ? (
-            <p className="text-center text-gray-500 py-4">Loading data...</p>
-          ) : (
-            <>
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Service Request (Pending only)
-                </label>
-                <select
-                  id="assign-request-select"
-                  className="input w-full"
-                  value={selectedRequest}
-                  onChange={(e) => setSelectedRequest(e.target.value)}
-                  required
-                >
-                  <option value="">— Select request —</option>
-                  {requests.map((r) => (
-                    <option key={r.id} value={r.id}>
-                      #{r.id} · {r.title}
-                    </option>
-                  ))}
-                </select>
-                {requests.length === 0 && (
-                  <p className="text-xs text-gray-400 mt-1">No pending requests found</p>
-                )}
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Technician
-                </label>
-                <select
-                  id="assign-tech-select"
-                  className="input w-full"
-                  value={selectedTech}
-                  onChange={(e) => setSelectedTech(e.target.value)}
-                  required
-                >
-                  <option value="">— Select technician —</option>
-                  {technicians.map((t) => (
-                    <option key={t.id} value={t.id}>
-                      {t.name || t.username} ({t.email})
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </>
-          )}
-          {error && (
-            <div className="flex items-center gap-2 bg-red-50 text-red-600 px-4 py-3 rounded-lg text-sm">
-              <FiAlertCircle className="w-4 h-4 flex-shrink-0" /> {error}
-            </div>
-          )}
-          <div className="flex justify-end gap-3 pt-2">
-            <button type="button" onClick={onClose} className="btn-secondary">
-              Cancel
-            </button>
-            <button
-              type="submit"
-              id="confirm-assign-btn"
-              className="btn-primary"
-              disabled={submitting || loading}
-            >
-              {submitting ? 'Assigning...' : 'Assign'}
-            </button>
-          </div>
-        </form>
+        <p className="text-sm text-content-muted">{label}</p>
+        <p className="text-2xl font-bold text-content-primary">{value}</p>
       </div>
     </div>
   )
@@ -175,19 +49,19 @@ function AddCategoryModal({ onClose, onSuccess }) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm mx-4">
-        <div className="flex items-center justify-between px-6 py-4 border-b">
-          <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-            <FiTag className="w-5 h-5 text-primary-600" /> Add Category
+    <div className="modal-overlay">
+      <div className="modal-content max-w-sm">
+        <div className="modal-header">
+          <h2 className="text-lg font-bold text-content-primary flex items-center gap-2">
+            <FiTag className="w-5 h-5 text-[#7eb8f7]" /> Add Category
           </h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+          <button onClick={onClose} className="text-content-muted hover:text-content-primary">
             <FiX className="w-5 h-5" />
           </button>
         </div>
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="modal-body space-y-4">
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
+            <label className="label">
               Category Name
             </label>
             <input
@@ -202,7 +76,7 @@ function AddCategoryModal({ onClose, onSuccess }) {
             />
           </div>
           {error && (
-            <div className="flex items-center gap-2 bg-red-50 text-red-600 px-4 py-3 rounded-lg text-sm">
+            <div className="flex items-center gap-2 bg-status-danger-bg text-status-danger-text px-4 py-3 rounded-sm text-sm">
               <FiAlertCircle className="w-4 h-4 flex-shrink-0" /> {error}
             </div>
           )}
@@ -247,41 +121,41 @@ function AddUserModal({ onClose, onSuccess }) {
   const set = (field) => (e) => setForm((p) => ({ ...p, [field]: e.target.value }))
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4">
-        <div className="flex items-center justify-between px-6 py-4 border-b">
-          <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-            <FiUserPlus className="w-5 h-5 text-primary-600" /> Add New User
+    <div className="modal-overlay">
+      <div className="modal-content">
+        <div className="modal-header">
+          <h2 className="text-lg font-bold text-content-primary flex items-center gap-2">
+            <FiUserPlus className="w-5 h-5 text-[#7eb8f7]" /> Add New User
           </h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+          <button onClick={onClose} className="text-content-muted hover:text-content-primary">
             <FiX className="w-5 h-5" />
           </button>
         </div>
-        <form onSubmit={handleSubmit} className="p-6 space-y-3">
+        <form onSubmit={handleSubmit} className="modal-body space-y-3">
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-semibold text-gray-600 mb-1">Full Name</label>
+              <label className="label text-xs">Full Name</label>
               <input type="text" className="input w-full" placeholder="Jane Doe"
                 value={form.name} onChange={set('name')} required />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-gray-600 mb-1">Username</label>
+              <label className="label text-xs">Username</label>
               <input type="text" className="input w-full" placeholder="janedoe"
                 value={form.username} onChange={set('username')} required />
             </div>
           </div>
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1">Email</label>
+            <label className="label text-xs">Email</label>
             <input type="email" className="input w-full" placeholder="jane@example.com"
               value={form.email} onChange={set('email')} required />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1">Password</label>
+            <label className="label text-xs">Password</label>
             <input type="password" className="input w-full" placeholder="••••••••"
               value={form.password} onChange={set('password')} required />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1">Role</label>
+            <label className="label text-xs">Role</label>
             <select className="input w-full" value={form.roleName} onChange={set('roleName')}>
               <option value="customer">Customer</option>
               <option value="technician">Technician</option>
@@ -289,7 +163,7 @@ function AddUserModal({ onClose, onSuccess }) {
             </select>
           </div>
           {error && (
-            <div className="flex items-center gap-2 bg-red-50 text-red-600 px-4 py-3 rounded-lg text-sm">
+            <div className="flex items-center gap-2 bg-status-danger-bg text-status-danger-text px-4 py-3 rounded-sm text-sm">
               <FiAlertCircle className="w-4 h-4 flex-shrink-0" /> {error}
             </div>
           )}
@@ -349,14 +223,6 @@ export default function AdminDashboard() {
 
   const quickActions = [
     {
-      id: 'qa-assign',
-      icon: FiTool,
-      label: 'Assign Technician',
-      desc: 'Dispatch a technician to a pending request',
-      color: 'bg-blue-500',
-      action: () => setModal('assign'),
-    },
-    {
       id: 'qa-add-user',
       icon: FiUserPlus,
       label: 'Add New User',
@@ -402,17 +268,12 @@ export default function AdminDashboard() {
     <div className="p-8">
       {/* Toast */}
       {toast && (
-        <div className={`fixed top-6 right-6 z-50 px-5 py-3 rounded-xl shadow-lg text-white font-semibold transition-all ${
-          toast.type === 'error' ? 'bg-red-600' : 'bg-green-600'
-        }`}>
+        <div className={`toast ${toast.type === 'error' ? 'toast-error' : 'toast-success'}`}>
           {toast.msg}
         </div>
       )}
 
       {/* Modals */}
-      {modal === 'assign' && (
-        <AssignModal onClose={() => setModal(null)} onSuccess={handleSuccess} />
-      )}
       {modal === 'category' && (
         <AddCategoryModal onClose={() => setModal(null)} onSuccess={handleSuccess} />
       )}
@@ -422,15 +283,15 @@ export default function AdminDashboard() {
 
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
-        <p className="text-gray-500 mt-2">
-          Welcome back, <span className="font-semibold text-primary-600">{user?.name}</span>.
+        <h1 className="text-3xl font-bold text-content-primary">Admin Dashboard</h1>
+        <p className="text-content-body mt-2">
+          Welcome back, <span className="font-semibold text-[#7eb8f7]">{user?.name}</span>.
           Here's the system overview.
         </p>
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-5 mb-8">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-5 mb-8">
         <StatCard icon={FiUsers} label="Total Users" value={stats.totalUsers || 0} color="bg-blue-500"
           onClick={() => navigate('/admin/users')} />
         <StatCard icon={FiClipboard} label="In Progress" value={stats.activeServiceRequests || 0} color="bg-yellow-500"
@@ -440,6 +301,7 @@ export default function AdminDashboard() {
         <StatCard icon={FiTrendingUp} label="Avg Rating" value={stats.averageRating > 0 ? `${Number(stats.averageRating).toFixed(1)}★` : '—'} color="bg-purple-500" />
         <StatCard icon={FiClock} label="Pending" value={stats.pending || 0} color="bg-red-500"
           onClick={() => navigate('/admin/requests')} />
+        <StatCard icon={FiDollarSign} label="Total Revenue" value={`$${(stats.totalRevenue || 0).toFixed(2)}`} color="bg-emerald-500" />
       </div>
 
       {/* Main Grid */}
@@ -447,10 +309,10 @@ export default function AdminDashboard() {
         {/* Recent Activity */}
         <div className="card">
           <div className="flex items-center justify-between mb-5">
-            <h2 className="text-lg font-bold text-gray-900">Recent Requests</h2>
+            <h2 className="text-lg font-bold text-content-primary">Recent Requests</h2>
             <button
               onClick={() => navigate('/admin/requests')}
-              className="text-sm text-primary-600 hover:underline font-semibold"
+              className="text-sm text-[#7eb8f7] hover:underline font-semibold"
             >
               View all →
             </button>
@@ -459,16 +321,20 @@ export default function AdminDashboard() {
             {data?.recentRequests?.length > 0 ? (
               data.recentRequests.map((req) => {
                 const statusColor = {
-                  pending: 'badge-info',
+                  requested: 'badge-info',
+                  assigned: 'badge-info',
+                  on_the_way: 'badge-warning',
+                  assigned: 'badge-info',
+                  on_the_way: 'badge-warning',
                   in_progress: 'badge-warning',
                   completed: 'badge-success',
-                  cancelled: 'badge-error',
+                  cancelled: 'badge-danger',
                 }[req.status] || 'badge'
                 return (
-                  <div key={req.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+                  <div key={req.id} className="flex items-center justify-between p-3 bg-surface-inner rounded-md">
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm font-semibold text-gray-900 truncate">{req.title || 'Service Request'}</p>
-                      <p className="text-xs text-gray-500 mt-0.5">
+                      <p className="text-sm font-semibold text-content-primary truncate">{req.title || 'Service Request'}</p>
+                      <p className="text-xs text-content-muted mt-0.5 truncate">
                         {req.customer?.name || req.customerName || 'Unknown customer'} ·{' '}
                         {new Date(req.created_at || req.createdAt || Date.now()).toLocaleDateString()}
                       </p>
@@ -480,7 +346,7 @@ export default function AdminDashboard() {
                 )
               })
             ) : (
-              <div className="text-center py-8 text-gray-400">
+              <div className="text-center py-8 text-content-muted">
                 <FiClipboard className="w-10 h-10 mx-auto mb-2 opacity-40" />
                 <p className="text-sm">No recent requests</p>
               </div>
@@ -490,7 +356,7 @@ export default function AdminDashboard() {
 
         {/* Quick Actions */}
         <div className="card">
-          <h2 className="text-lg font-bold text-gray-900 mb-5">Quick Actions</h2>
+          <h2 className="text-lg font-bold text-content-primary mb-5">Quick Actions</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {quickActions.map((qa) => {
               const Icon = qa.icon
@@ -499,16 +365,16 @@ export default function AdminDashboard() {
                   key={qa.id}
                   id={qa.id}
                   onClick={qa.action}
-                  className="flex items-center gap-3 p-4 rounded-xl border border-gray-100 hover:border-primary-200 hover:bg-primary-50 transition-all text-left group"
+                  className="flex items-center gap-3 p-4 rounded-md border border-border hover:border-[#7eb8f7]/40 hover:bg-surface-inner transition-all text-left group"
                 >
-                  <div className={`p-2.5 rounded-lg ${qa.color} flex-shrink-0`}>
+                  <div className={`p-2.5 rounded-md ${qa.color} flex-shrink-0`}>
                     <Icon className="w-4 h-4 text-white" />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-sm font-bold text-gray-900 group-hover:text-primary-700 transition-colors">
+                    <p className="text-sm font-bold text-content-primary group-hover:text-[#7eb8f7] transition-colors">
                       {qa.label}
                     </p>
-                    <p className="text-xs text-gray-500 truncate">{qa.desc}</p>
+                    <p className="text-xs text-content-muted truncate">{qa.desc}</p>
                   </div>
                 </button>
               )

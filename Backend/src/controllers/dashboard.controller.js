@@ -21,12 +21,19 @@ const DashboardController = {
         try {
             const totalUsers = await UserRepository.count();
             const allRequests = await ServiceRequestService.getAllServiceRequests();
-            const pendingRequests = allRequests.filter((request) => request.status === "pending");
+            const pendingRequests = allRequests.filter((request) =>
+                request.status === "requested" || request.status === "assigned" || request.status === "on_the_way"
+            );
             const inProgressRequests = allRequests.filter((request) => request.status === "in_progress");
             const completedRequests = allRequests.filter((request) => request.status === "completed");
             const totalAssignments = await AssignmentRepository.findAll();
             const averageRating = await ReviewRepository.getAverageRating();
             const recentRequests = allRequests.slice(0, 5);
+
+            // Calculate total revenue from completed requests
+            const totalRevenue = completedRequests.reduce((sum, req) => {
+                return sum + (parseFloat(req.price) || 0);
+            }, 0);
 
             return res.status(200).json({
                 success: true,
@@ -37,7 +44,8 @@ const DashboardController = {
                         totalAssignments: totalAssignments.length,
                         averageRating: averageRating || 0,
                         pending: pendingRequests.length,
-                        completed: completedRequests.length
+                        completed: completedRequests.length,
+                        totalRevenue: parseFloat(totalRevenue.toFixed(2))
                     },
                     recentRequests,
                     timestamp: new Date().toISOString()
@@ -77,7 +85,9 @@ const DashboardController = {
     async getAdminServiceRequests(req, res, next) {
         try {
             const allRequests = await ServiceRequestService.getAllServiceRequests();
-            const pendingRequests = allRequests.filter(r => r.status === "pending");
+            const pendingRequests = allRequests.filter(r =>
+                r.status === "requested" || r.status === "assigned" || r.status === "on_the_way"
+            );
             const completedRequests = allRequests.filter(r => r.status === "completed");
             const inProgressRequests = allRequests.filter(r => r.status === "in_progress");
 
@@ -109,9 +119,39 @@ const DashboardController = {
             const userId = req.user.id;
             const serviceRequests = await ServiceRequestService.getCustomerRequests(userId);
             const activeRequests = serviceRequests.filter(
-                (r) => r.status === "in_progress" || r.status === "requested"
+                (r) => r.status === "in_progress" || r.status === "requested" || r.status === "assigned" || r.status === "on_the_way"
             );
             const completedRequests = serviceRequests.filter((r) => r.status === "completed");
+
+            // Calculate total spent on completed requests
+            const totalSpent = completedRequests.reduce((sum, req) => {
+                return sum + (parseFloat(req.price) || 0);
+            }, 0);
+
+            // Enrich each request with application counts and assigned technician info
+            const requestsWithApplicationCounts = await Promise.all(
+                serviceRequests.map(async (req) => {
+                    const enriched = { ...req, applicationCount: 0, is_paid: req.is_paid || false };
+
+                    if (req.status === "requested") {
+                        const applications = await AssignmentRepository.getRequestApplications(req.id);
+                        enriched.applicationCount = applications.length;
+                    }
+
+                    // For assigned/on_the_way/in_progress/completed requests, include assigned technician
+                    if (["assigned", "on_the_way", "in_progress", "completed"].includes(req.status)) {
+                        const activeAssignment = await AssignmentRepository.getActiveAssignmentByRequest(req.id);
+                        if (activeAssignment && activeAssignment.technician) {
+                            enriched.assignedTechnician = {
+                                id: activeAssignment.technician.id,
+                                name: activeAssignment.technician.full_name || activeAssignment.technician.username,
+                            };
+                        }
+                    }
+
+                    return enriched;
+                })
+            );
 
             return res.status(200).json({
                 success: true,
@@ -119,9 +159,10 @@ const DashboardController = {
                     summary: {
                         total: serviceRequests.length,
                         active: activeRequests.length,
-                        completed: completedRequests.length
+                        completed: completedRequests.length,
+                        totalSpent: parseFloat(totalSpent.toFixed(2))
                     },
-                    recentRequests: serviceRequests.slice(0, 5)
+                    recentRequests: requestsWithApplicationCounts.slice(0, 5)
                 }
             });
         } catch (error) {
@@ -181,7 +222,7 @@ const DashboardController = {
         try {
             const userId = req.user.id;
             const technicianProfile = await TechnicianRepository.findByUserId(userId);
-            const assignments = await AssignmentRepository.findByTechnicianId(technicianProfile.id);
+            const assignments = await AssignmentRepository.findByTechnicianId(userId);
 
             await Promise.all(assignments.map(async (assignment) => {
                 if (assignment.request) {
@@ -190,22 +231,51 @@ const DashboardController = {
                 return assignment;
             }));
 
-            const completedAssignments = assignments.filter((a) => a.request?.status === "completed");
-            const pendingAssignments = assignments.filter(
-                (a) => a.request?.status === "pending" || a.request?.status === "in_progress" || a.request?.status === "requested"
+            // Separate assignments by assignment.status (the source of truth)
+            // "applied" = pending applications (assignment.status === "applied")
+            const appliedAssignments = assignments.filter(
+                (a) => a.status === "applied"
             );
+            // "active" = accepted jobs that are NOT yet completed/cancelled
+            const activeAssignments = assignments.filter(
+                (a) => a.status === "accepted" && a.request?.status !== "completed" && a.request?.status !== "cancelled"
+            );
+            // "rejected" = rejected applications
+            const rejectedAssignments = assignments.filter(
+                (a) => a.status === "rejected"
+            );
+            const completedAssignments = assignments.filter((a) => a.request?.status === "completed");
+            const cancelledAssignments = assignments.filter((a) => a.request?.status === "cancelled");
+
+            // Calculate total earnings from completed AND PAID assignments only
+            const totalEarnings = completedAssignments.reduce((sum, a) => {
+                if (a.request?.is_paid) {
+                    return sum + (parseFloat(a.request?.price) || 0);
+                }
+                return sum;
+            }, 0);
 
             return res.status(200).json({
                 success: true,
                 data: {
+                    isAvailable: technicianProfile.availability_status === 'available',
                     summary: {
                         total: assignments.length,
-                        pending: pendingAssignments.length,
-                        completed: completedAssignments.length,
+                        availableJobs: 0, // populated separately via getAvailableRequests
+                        appliedJobs: appliedAssignments.length,
+                        activeJobs: activeAssignments.length,
+                        pending: activeAssignments.length, // keep for backward compat
+                        completedJobs: completedAssignments.length,
+                        cancelled: cancelledAssignments.length,
+                        rejected: rejectedAssignments.length,
                         rating: technicianProfile.rating || 0,
-                        availabilityStatus: technicianProfile.availability_status || 'offline'
+                        availabilityStatus: technicianProfile.availability_status || 'offline',
+                        totalEarnings: parseFloat(totalEarnings.toFixed(2))
                     },
-                    upcomingAssignments: pendingAssignments.slice(0, 5)
+                    activeAssignments: activeAssignments.slice(0, 5),
+                    appliedAssignments: appliedAssignments.slice(0, 5),
+                    rejectedAssignments: rejectedAssignments.slice(0, 5),
+                    completedAssignments: completedAssignments.slice(0, 10)
                 }
             });
         } catch (error) {
@@ -223,7 +293,7 @@ const DashboardController = {
         try {
             const userId = req.user.id;
             const technicianProfile = await TechnicianRepository.findByUserId(userId);
-            const assignments = await AssignmentRepository.findByTechnicianId(technicianProfile.id);
+            const assignments = await AssignmentRepository.findByTechnicianId(userId);
 
             await Promise.all(assignments.map(async (assignment) => {
                 if (assignment.request) {
@@ -252,7 +322,7 @@ const DashboardController = {
         try {
             const userId = req.user.id;
             const technicianProfile = await TechnicianRepository.findByUserId(userId);
-            const reviews = await ReviewRepository.findByTechnicianId(technicianProfile.id);
+            const reviews = await ReviewRepository.findByTechnicianId(userId);
 
             return res.status(200).json({
                 success: true,

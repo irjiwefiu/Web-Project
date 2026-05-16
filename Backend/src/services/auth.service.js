@@ -2,6 +2,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import UserRepository from "../repositories/user.repository.js";
 import RoleRepository from "../repositories/role.repository.js";
+import TechnicianRepository from "../repositories/technician.repository.js";
 
 /**
  * Service to handle Authentication logic
@@ -10,7 +11,7 @@ const AuthService = {
     
     // 1. registerUser: Handles password hashing and role assignment
     async registerUser(userData) {
-        const { name, username, email, password, roleName } = userData;
+        const { name, username, email, password, roleName, skills, bio, service_area } = userData;
 
         // Check if user already exists
         const existingUser = await UserRepository.findUserByEmail(email);
@@ -18,15 +19,16 @@ const AuthService = {
             throw new Error("User with this email already exists");
         }
 
-        // Only allow public registration as a customer
-        if (roleName && roleName.toLowerCase() !== "customer") {
-            throw new Error("Only administrators can assign non-customer roles.");
+        // Allow public registration as customer or technician
+        const allowedRoles = ["customer", "technician"];
+        const selectedRole = (roleName || "customer").toLowerCase();
+        if (!allowedRoles.includes(selectedRole)) {
+            throw new Error("Only customer and technician roles can be self-registered.");
         }
 
-        // Always assign the customer role for public registration
-        const role = await RoleRepository.findRoleByName("customer");
+        const role = await RoleRepository.findRoleByName(selectedRole);
         if (!role) {
-            throw new Error("Customer role is not configured.");
+            throw new Error(`Role "${selectedRole}" is not configured.`);
         }
 
         // Hash password
@@ -34,13 +36,28 @@ const AuthService = {
         const hashedPassword = await bcrypt.hash(password, saltRounds);
 
         // Save user
-        return await UserRepository.createUser({
+        const newUser = await UserRepository.createUser({
             name,
             username,
             email,
             password: hashedPassword,
             role
         });
+
+        // If registering as technician, create the technician profile
+        if (selectedRole === "technician") {
+            await TechnicianRepository.createTechnicianProfile({
+                user: { id: newUser.id },
+                bio: bio || null,
+                skills: skills || [],
+                service_area: service_area || null,
+                availability_status: "offline",
+                rating: 0,
+                total_jobs: 0,
+            });
+        }
+
+        return newUser;
     },
 
     // 2. verifyUserCredentials: Validates email and password

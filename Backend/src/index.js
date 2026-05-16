@@ -3,6 +3,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import "reflect-metadata";
 import  AppDataSource  from "./config/data-source.js";
+import { ensureDatabaseColumns } from "./config/ensureColumns.js";
 
 // Import middlewares
 import  errorMiddleware  from "./middlewares/error.middleware.js";
@@ -29,15 +30,22 @@ const PORT = process.env.PORT || 3000;
 /**
  * Middleware Stack
  */
+const allowedOrigins = [
+    "http://localhost:5173",
+    "http://localhost:5174",
+    "http://127.0.0.1:5173",
+    "http://127.0.0.1:5174",
+];
+
+// Add Vercel preview/production URLs from env
+if (process.env.FRONTEND_URL) {
+    allowedOrigins.push(process.env.FRONTEND_URL);
+}
+
 app.use(cors({
     origin: (origin, callback) => {
-        const allowed = [
-            "http://localhost:5173",
-            "http://localhost:5174",
-            "http://127.0.0.1:5173",
-            "http://127.0.0.1:5174",
-        ];
-        if (!origin || allowed.includes(origin)) {
+        // Allow requests with no origin (server-to-server, Postman, etc.)
+        if (!origin || allowedOrigins.includes(origin)) {
             callback(null, true);
         } else {
             callback(new Error("Not allowed by CORS"));
@@ -55,8 +63,9 @@ app.use(requestLogger);
  * Database Initialization
  */
 AppDataSource.initialize()
-    .then(() => {
+    .then(async () => {
         console.log("✅ Database connected successfully");
+        await ensureDatabaseColumns();
     })
     .catch((error) => {
         console.error("❌ Database connection failed:", error);
@@ -111,27 +120,29 @@ app.use((req, res) => {
 app.use(errorMiddleware);
 
 /**
- * Start Server
+ * Start Server (skip listening when running on Vercel serverless)
  */
-const server = app.listen(PORT, () => {
-    console.log(`
+if (process.env.VERCEL !== "1") {
+    const server = app.listen(PORT, () => {
+        console.log(`
 ╔════════════════════════════════════════╗
 ║   Service Management Backend API        ║
 ║   Server running on port ${PORT}            ║
 ║   Environment: ${process.env.NODE_ENV || "development"}     ║
 ╚════════════════════════════════════════╝
-    `);
-});
-
-/**
- * Graceful Shutdown
- */
-process.on("SIGTERM", () => {
-    console.log("SIGTERM signal received: closing HTTP server");
-    server.close(() => {
-        console.log("HTTP server closed");
-        process.exit(0);
+        `);
     });
-});
+
+    /**
+     * Graceful Shutdown
+     */
+    process.on("SIGTERM", () => {
+        console.log("SIGTERM signal received: closing HTTP server");
+        server.close(() => {
+            console.log("HTTP server closed");
+            process.exit(0);
+        });
+    });
+}
 
 export default app;

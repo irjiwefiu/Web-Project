@@ -42,8 +42,7 @@ export default function Sidebar({ role }) {
     if (role === 'technician') {
       return [
         { icon: FiHome,        label: 'Dashboard',   path: '/dashboard/technician' },
-        { icon: FiClipboard,   label: 'My Jobs',     path: '/profile' },
-        { icon: FiTrendingUp,  label: 'Performance', path: '/profile' },
+        { icon: FiBarChart2,   label: 'Performance', path: '/dashboard/technician/performance' },
         { icon: FiUser,        label: 'My Profile',  path: '/profile' },
       ]
     }
@@ -55,14 +54,14 @@ export default function Sidebar({ role }) {
 
   return (
     <aside
-      className={`h-full bg-white border-r border-gray-200 transition-all duration-300 ${
+      className={`h-full bg-surface border-r border-border transition-all duration-300 ${
         isSidebarOpen ? 'w-64' : 'w-20'
       } overflow-y-auto flex-shrink-0`}
     >
       {/* Brand */}
       {isSidebarOpen && (
-        <div className="px-6 py-5 border-b border-gray-100">
-          <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest">
+        <div className="px-6 py-5 border-b border-border">
+          <p className="text-xs font-semibold text-content-muted uppercase tracking-widest">
             {role === 'admin' ? 'Admin Panel' : role === 'customer' ? 'Customer Portal' : 'Technician Portal'}
           </p>
         </div>
@@ -71,20 +70,25 @@ export default function Sidebar({ role }) {
       <nav className="p-3 space-y-1">
         {menuItems.map((item) => {
           const Icon = item.icon
-          const isActive = location.pathname === item.path
+          // Exact match OR path starts with item path + '/' but NOT when a sibling path also matches
+          const exactMatch = location.pathname === item.path
+          const prefixMatch = location.pathname.startsWith(item.path + '/')
+          // For Dashboard, only highlight on exact match (not when on sub-routes like /performance)
+          const isDashboard = item.path.endsWith('/technician') || item.path.endsWith('/customer') || item.path.endsWith('/admin')
+          const isActive = isDashboard ? exactMatch : (exactMatch || prefixMatch)
 
           return (
             <Link
               key={`${item.label}-${item.path}`}
               to={item.path}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all ${
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-md transition-all ${
                 isActive
-                  ? 'bg-primary-600 text-white shadow-sm'
-                  : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                  ? 'bg-[#1e2d4a] text-[#7eb8f7] shadow-sm'
+                  : 'text-content-body hover:bg-surface-inner hover:text-content-primary'
               }`}
               title={!isSidebarOpen ? item.label : ''}
             >
-              <Icon className={`w-5 h-5 flex-shrink-0 ${isActive ? 'text-white' : ''}`} />
+              <Icon className={`w-5 h-5 flex-shrink-0 ${isActive ? 'text-[#7eb8f7]' : ''}`} />
               {isSidebarOpen && (
                 <span className="font-medium text-sm">{item.label}</span>
               )}

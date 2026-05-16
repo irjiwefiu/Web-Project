@@ -44,11 +44,11 @@ router.patch(
 );
 
 /**
- * DELETE /assignments/:id/reject
- * Reject an application
+ * PATCH /assignments/:id/reject
+ * Reject an application (marks as rejected, does not delete)
  * Protected: Customer only
  */
-router.delete(
+router.patch(
     "/:id/reject",
     authenticateUser,
     authorizeRoles("customer"),
@@ -117,6 +117,18 @@ router.get(
     "/technician/:technicianId",
     authenticateUser,
     AssignmentController.getTechnicianAssignmentsController
+);
+
+/**
+ * GET /assignments/my-assignments
+ * Get all assignments for the logged-in technician
+ * Protected: Technician only
+ */
+router.get(
+    "/my-assignments",
+    authenticateUser,
+    authorizeRoles("technician"),
+    AssignmentController.getMyAssignmentsController
 );
 
 export default router;

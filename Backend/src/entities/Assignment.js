@@ -9,6 +9,10 @@ export default new EntitySchema({
       type: "int",
       generated: true,
     },
+    status: {
+      type: "varchar",
+      default: "applied",
+    },
     assigned_at: {
       type: "timestamp",
       createDate: true,
@@ -31,7 +35,7 @@ export default new EntitySchema({
       target: "User",
       type: "many-to-one",
       joinColumn: { name: "assigned_by_id" },
-      onDelete: "SET NULL", // Keep record even if admin is deleted
+      onDelete: "SET NULL",
     },
   },
 });

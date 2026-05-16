@@ -95,11 +95,7 @@ export default function CategoryManagement() {
     <div className="p-8">
       {/* Toast */}
       {toast && (
-        <div
-          className={`fixed top-6 right-6 z-50 px-5 py-3 rounded-xl shadow-lg text-white font-semibold transition-all ${
-            toast.type === 'error' ? 'bg-red-600' : 'bg-green-600'
-          }`}
-        >
+        <div className={`toast ${toast.type === 'error' ? 'toast-error' : 'toast-success'}`}>
           {toast.msg}
         </div>
       )}
@@ -107,8 +103,8 @@ export default function CategoryManagement() {
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Category Management</h1>
-          <p className="text-gray-600 mt-2">
+          <h1 className="text-3xl font-bold text-content-primary">Category Management</h1>
+          <p className="text-content-body mt-2">
             Manage service categories ({categories.length} total)
           </p>
         </div>
@@ -125,10 +121,10 @@ export default function CategoryManagement() {
       {/* Create Form */}
       {showForm && (
         <div className="card mb-6 p-6">
-          <h2 className="text-lg font-bold text-gray-900 mb-4">New Service Category</h2>
+          <h2 className="text-lg font-bold text-content-primary mb-4">New Service Category</h2>
           <form onSubmit={handleCreate} className="flex gap-3 items-end">
             <div className="flex-1">
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
+              <label className="label">
                 Category Name
               </label>
               <input
@@ -151,7 +147,7 @@ export default function CategoryManagement() {
             </button>
           </form>
           {createError && (
-            <p className="mt-3 text-sm text-red-600 bg-red-50 px-4 py-2 rounded-lg">
+            <p className="mt-3 text-sm text-status-danger-text bg-status-danger-bg px-4 py-2 rounded-lg">
               {createError}
             </p>
           )}
@@ -161,25 +157,25 @@ export default function CategoryManagement() {
       {/* Table */}
       {loading ? (
         <div className="text-center py-16">
-          <div className="animate-spin w-8 h-8 border-4 border-primary-600 border-t-transparent rounded-full mx-auto mb-4" />
-          <p className="text-gray-500">Loading categories...</p>
+          <div className="animate-spin w-8 h-8 border-4 border-[#7eb8f7] border-t-transparent rounded-full mx-auto mb-4" />
+          <p className="text-content-muted">Loading categories...</p>
         </div>
       ) : (
         <div className="card overflow-hidden">
           <table className="w-full" id="categories-table">
-            <thead className="bg-gray-50 border-b border-gray-200">
+            <thead className="table-header">
               <tr>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">#</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Name</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Created</th>
-                <th className="px-6 py-4 text-right text-sm font-semibold text-gray-700">Actions</th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-content-primary">#</th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-content-primary">Name</th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-content-primary">Created</th>
+                <th className="px-6 py-4 text-right text-sm font-semibold text-content-primary">Actions</th>
               </tr>
             </thead>
             <tbody>
               {categories.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="text-center py-12 text-gray-500">
-                    <FiTag className="w-10 h-10 mx-auto mb-3 text-gray-300" />
+                  <td colSpan={4} className="text-center py-12 text-content-muted">
+                    <FiTag className="w-10 h-10 mx-auto mb-3 text-content-hint" />
                     No categories found
                   </td>
                 </tr>
@@ -187,9 +183,9 @@ export default function CategoryManagement() {
                 categories.map((cat, idx) => (
                   <tr
                     key={cat.id}
-                    className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
+                    className="table-row"
                   >
-                    <td className="px-6 py-4 text-gray-500 text-sm">{idx + 1}</td>
+                    <td className="px-6 py-4 text-content-muted text-sm">{idx + 1}</td>
                     <td className="px-6 py-4">
                       {editingId === cat.id ? (
                         <input
@@ -202,14 +198,14 @@ export default function CategoryManagement() {
                         />
                       ) : (
                         <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-lg bg-primary-100 flex items-center justify-center">
-                            <FiTag className="w-4 h-4 text-primary-600" />
+                          <div className="w-8 h-8 rounded-lg bg-[#1e2d4a] flex items-center justify-center">
+                            <FiTag className="w-4 h-4 text-[#7eb8f7]" />
                           </div>
-                          <span className="font-semibold text-gray-900">{cat.name}</span>
+                          <span className="font-semibold text-content-primary">{cat.name}</span>
                         </div>
                       )}
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-500">
+                    <td className="px-6 py-4 text-sm text-content-muted">
                       {cat.created_at
                         ? new Date(cat.created_at).toLocaleDateString()
                         : cat.createdAt
@@ -223,14 +219,14 @@ export default function CategoryManagement() {
                             <button
                               onClick={() => handleUpdate(cat.id)}
                               disabled={editLoading}
-                              className="p-2 rounded-lg bg-green-100 hover:bg-green-200 text-green-700"
+                              className="p-2 rounded-lg bg-status-success-bg hover:bg-[#1a4a2a] text-status-success-text"
                               title="Save"
                             >
                               <FiCheck className="w-4 h-4" />
                             </button>
                             <button
                               onClick={cancelEdit}
-                              className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-600"
+                              className="p-2 rounded-lg bg-surface-inner hover:bg-[#2a2d3d] text-content-body"
                               title="Cancel"
                             >
                               <FiX className="w-4 h-4" />
@@ -241,7 +237,7 @@ export default function CategoryManagement() {
                             <button
                               id={`edit-cat-${cat.id}`}
                               onClick={() => startEdit(cat)}
-                              className="p-2 rounded-lg hover:bg-blue-100 text-blue-600"
+                              className="p-2 rounded-lg hover:bg-status-info-bg text-status-info-text"
                               title="Edit"
                             >
                               <FiEdit2 className="w-4 h-4" />
@@ -250,7 +246,7 @@ export default function CategoryManagement() {
                               id={`delete-cat-${cat.id}`}
                               onClick={() => handleDelete(cat.id)}
                               disabled={deleteId === cat.id}
-                              className="p-2 rounded-lg hover:bg-red-100 text-red-600 disabled:opacity-50"
+                              className="p-2 rounded-lg hover:bg-status-danger-bg text-status-danger-text disabled:opacity-50"
                               title="Delete"
                             >
                               <FiTrash2 className="w-4 h-4" />

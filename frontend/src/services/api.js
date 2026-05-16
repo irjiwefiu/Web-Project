@@ -1,4 +1,5 @@
-const API_BASE_URL = '/api/v1'
+// Use environment variable for API URL in production, fallback to relative path for dev proxy
+const API_BASE_URL = import.meta.env.VITE_API_URL || '/api/v1'
 
 /**
  * Core fetch wrapper with auth token handling
@@ -57,6 +58,7 @@ export const technicianAPI = {
   createProfile: (body) => fetchAPI('/technicians/profile', { method: 'POST', body: JSON.stringify(body) }),
   updateProfile: (body) => fetchAPI('/technicians/profile', { method: 'PATCH', body: JSON.stringify(body) }),
   updateAvailability: (body) => fetchAPI('/technicians/availability', { method: 'PATCH', body: JSON.stringify(body) }),
+  toggleAvailability: () => fetchAPI('/technicians/availability', { method: 'PATCH', body: JSON.stringify({}) }),
   getAvailable: () => fetchAPI('/technicians/available'),
   getByCategory: (categoryId) => fetchAPI(`/technicians/category/${categoryId}`),
   getByArea: (area) => fetchAPI(`/technicians/area/${area}`),
@@ -73,7 +75,9 @@ export const requestAPI = {
   getById: (id) => fetchAPI(`/requests/${id}`),
   update: (id, body) => fetchAPI(`/requests/${id}`, { method: 'PATCH', body: JSON.stringify(body) }),
   cancel: (id, body) => fetchAPI(`/requests/${id}/cancel`, { method: 'PATCH', body: JSON.stringify(body) }),
+  pay: (id) => fetchAPI(`/requests/${id}/pay`, { method: 'PATCH' }),
   getMyRequests: () => fetchAPI('/requests/customer/me'),
+  getAvailable: () => fetchAPI('/search/requests/available'),
   filter: (params) => {
     const query = new URLSearchParams(params).toString()
     return fetchAPI(`/requests/filter?${query}`)
@@ -89,6 +93,24 @@ export const assignmentAPI = {
   getByRequest: (requestId) => fetchAPI(`/assignments/request/${requestId}`),
   getByTechnician: (techId) => fetchAPI(`/assignments/technician/${techId}`),
   getApplications: (requestId) => fetchAPI(`/assignments/request/${requestId}/applications`),
+  getMyAssignments: () => fetchAPI('/assignments/my-assignments'),
+  apply: (requestId) => fetchAPI('/assignments/apply', { method: 'POST', body: JSON.stringify({ request_id: requestId }) }),
+  applyForRequest: (body) => fetchAPI('/assignments/apply', { method: 'POST', body: JSON.stringify(body) }),
+  acceptApplication: (id) => fetchAPI(`/assignments/${id}/accept`, { method: 'PATCH' }),
+  rejectApplication: (id) => fetchAPI(`/assignments/${id}/reject`, { method: 'PATCH' }),
+}
+
+// Search API (for technicians finding available requests)
+export const searchAPI = {
+  getAvailableRequests: (params) => {
+    const query = params ? '?' + new URLSearchParams(params).toString() : ''
+    return fetchAPI(`/search/requests/available${query}`)
+  },
+  searchRequests: (params) => {
+    const query = new URLSearchParams(params).toString()
+    return fetchAPI(`/search/requests/keyword?${query}`)
+  },
+  getRequestsByCategory: (categoryId) => fetchAPI(`/search/requests/category/${categoryId}`),
 }
 
 // Status API

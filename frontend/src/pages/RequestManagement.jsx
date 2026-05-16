@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react'
-import { FiSearch, FiFilter, FiEye, FiCheckCircle, FiClock, FiX, FiChevronLeft, FiChevronRight, FiArrowUp, FiArrowDown } from 'react-icons/fi'
+import { FiSearch, FiX, FiChevronLeft, FiChevronRight } from 'react-icons/fi'
 import { requestAPI } from '../services/api'
 
 export default function RequestManagement() {
@@ -75,8 +75,8 @@ export default function RequestManagement() {
   const getStatusColor = (status) => {
     switch (status) {
       case 'requested':
-      case 'pending':
       case 'assigned':
+      case 'on_the_way':
         return 'badge-info'
       case 'in_progress':
         return 'badge-warning'
@@ -92,15 +92,15 @@ export default function RequestManagement() {
   return (
     <div className="p-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Service Requests</h1>
-        <p className="text-gray-600 mt-2">Manage all service requests ({requests.length} total)</p>
+        <h1 className="text-3xl font-bold text-content-primary">Service Requests</h1>
+        <p className="text-content-body mt-2">Manage all service requests ({requests.length} total)</p>
       </div>
 
       {/* Filters */}
       <div className="card mb-8">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="relative">
-            <FiSearch className="absolute left-3 top-3 text-gray-400" />
+            <FiSearch className="absolute left-3 top-3 text-content-muted" />
             <input
               type="text" id="request-search" placeholder="Search requests..."
               className="input pl-10 w-full" value={filters.search}
@@ -112,7 +112,8 @@ export default function RequestManagement() {
               onChange={(e) => setFilters((prev) => ({ ...prev, status: e.target.value }))}>
               <option value="">All Statuses</option>
               <option value="requested">Requested</option>
-              <option value="pending">Pending</option>
+              <option value="assigned">Assigned</option>
+              <option value="on_the_way">On The Way</option>
               <option value="in_progress">In Progress</option>
               <option value="completed">Completed</option>
               <option value="cancelled">Cancelled</option>
@@ -147,51 +148,45 @@ export default function RequestManagement() {
             </button>
           </div>
         </div>
-        <div className="mt-3 text-sm text-gray-500">
+        <div className="mt-3 text-sm text-content-muted">
           Showing {paginatedRequests.length} of {sortedRequests.length} requests
         </div>
       </div>
 
       {/* Requests List */}
       {loading ? (
-        <div className="text-center py-12">Loading requests...</div>
+        <div className="text-center py-12 text-content-muted">Loading requests...</div>
       ) : paginatedRequests.length > 0 ? (
         <>
           <div className="space-y-4">
             {paginatedRequests.map((request) => (
-              <div key={request.id} className="card hover:shadow-lg transition-shadow">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-gray-900 text-lg">{request.title}</h3>
-                    <p className="text-gray-600 mt-1">{request.description}</p>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4 text-sm">
-                      <div>
-                        <p className="text-gray-600">Customer</p>
-                        <p className="font-semibold text-gray-900">{request.customerName || request.customer?.name || 'Unknown'}</p>
+              <div key={request.id} className="card hover:shadow-lg transition-shadow overflow-hidden">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-content-primary text-lg truncate">{request.title}</h3>
+                    <p className="text-content-body mt-1 line-clamp-2 break-words">{request.description}</p>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4 text-sm">
+                      <div className="min-w-0">
+                        <p className="text-content-muted truncate">Customer</p>
+                        <p className="font-semibold text-content-primary truncate">{request.customerName || request.customer?.name || 'Unknown'}</p>
                       </div>
-                      <div>
-                        <p className="text-gray-600">Category</p>
-                        <p className="font-semibold text-gray-900">{request.categoryName || request.category?.name || 'N/A'}</p>
+                      <div className="min-w-0">
+                        <p className="text-content-muted truncate">Category</p>
+                        <p className="font-semibold text-content-primary truncate">{request.categoryName || request.category?.name || 'N/A'}</p>
                       </div>
-                      <div>
-                        <p className="text-gray-600">Location</p>
-                        <p className="font-semibold text-gray-900">{request.location}</p>
+                      <div className="min-w-0">
+                        <p className="text-content-muted truncate">Location</p>
+                        <p className="font-semibold text-content-primary truncate">{request.location || 'N/A'}</p>
                       </div>
-                      <div>
-                        <p className="text-gray-600">Urgency</p>
-                        <p className="font-semibold text-gray-900 capitalize">{request.urgency}</p>
+                      <div className="min-w-0">
+                        <p className="text-content-muted truncate">Urgency</p>
+                        <p className="font-semibold text-content-primary capitalize truncate">{request.urgency || 'medium'}</p>
                       </div>
                     </div>
                   </div>
-                  <div className="ml-4 text-right">
-                    <span className={`badge ${getStatusColor(request.status)}`}>{request.status?.replace('_', ' ')}</span>
+                  <div className="flex-shrink-0 text-right">
+                    <span className={`badge whitespace-nowrap ${getStatusColor(request.status)}`}>{request.status?.replace('_', ' ')}</span>
                   </div>
-                </div>
-                <div className="mt-4 flex gap-2">
-                  <button className="btn-secondary text-sm">View Details</button>
-                  {(request.status === 'pending' || request.status === 'requested') && (
-                    <button className="btn-primary text-sm">Assign Technician</button>
-                  )}
                 </div>
               </div>
             ))}
@@ -211,8 +206,8 @@ export default function RequestManagement() {
                   <button key={page} onClick={() => setCurrentPage(page)}
                     className={`w-10 h-10 rounded-lg font-semibold transition-colors ${
                       currentPage === page
-                        ? 'bg-primary-600 text-white'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        ? 'bg-[#1e2d4a] text-[#7eb8f7]'
+                        : 'bg-surface-inner text-content-body hover:bg-[#2a2d3d]'
                     }`}>{page}</button>
                 ))}
               </div>
@@ -227,8 +222,8 @@ export default function RequestManagement() {
         </>
       ) : (
         <div className="card text-center py-12">
-          <FiX className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-          <p className="text-gray-600">No requests found</p>
+          <FiX className="w-12 h-12 text-content-hint mx-auto mb-4" />
+          <p className="text-content-body">No requests found</p>
         </div>
       )}
     </div>

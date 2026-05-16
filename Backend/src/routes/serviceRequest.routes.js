@@ -97,6 +97,18 @@ router.get(
 );
 
 /**
+ * PATCH /requests/:id/pay
+ * Pay for a completed service request
+ * Protected: Customer only
+ */
+router.patch(
+    "/:id/pay",
+    authenticateUser,
+    authorizeRoles("customer"),
+    ServiceRequestController.payForRequestController
+);
+
+/**
  * PATCH /requests/:id
  * Update a service request
  * Protected: Customer only (can update own request)

@@ -7,9 +7,9 @@ import { userAPI } from '../services/api'
 
 function AvailBadge({ status }) {
   const map = {
-    available: 'bg-green-100 text-green-700',
-    busy:      'bg-yellow-100 text-yellow-700',
-    offline:   'bg-gray-100 text-gray-500',
+    available: 'bg-status-success-bg text-status-success-text',
+    busy:      'bg-status-warning-bg text-status-warning-text',
+    offline:   'bg-surface-inner text-content-muted',
   }
   return (
     <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold capitalize ${map[status] || map.offline}`}>
@@ -25,11 +25,11 @@ function Stars({ rating }) {
       {[1,2,3,4,5].map((s) => (
         <FiStar
           key={s}
-          className={`w-3.5 h-3.5 ${s <= Math.round(r) ? 'text-yellow-400 fill-yellow-400' : 'text-gray-200'}`}
-          style={{ fill: s <= Math.round(r) ? '#facc15' : 'none' }}
+          className={`w-3.5 h-3.5 ${s <= Math.round(r) ? 'text-[#fbbf24] fill-[#fbbf24]' : 'text-content-hint'}`}
+          style={{ fill: s <= Math.round(r) ? '#fbbf24' : 'none' }}
         />
       ))}
-      <span className="text-xs text-gray-500 ml-1">{r > 0 ? r.toFixed(1) : 'N/A'}</span>
+      <span className="text-xs text-content-muted ml-1">{r > 0 ? r.toFixed(1) : 'N/A'}</span>
     </div>
   )
 }
@@ -81,24 +81,24 @@ export default function TechnicianManagement() {
     <div className="p-8">
       {/* Detail Modal */}
       {selected && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 overflow-hidden">
-            <div className="bg-gradient-to-r from-primary-600 to-primary-800 px-6 py-5 flex items-center justify-between">
-              <h2 className="text-xl font-bold text-white">Technician Profile</h2>
-              <button onClick={() => setSelected(null)} className="text-white/80 hover:text-white">
+        <div className="modal-overlay">
+          <div className="modal-content w-full max-w-lg mx-4 overflow-hidden">
+            <div className="modal-header bg-surface-inner">
+              <h2 className="text-xl font-bold text-content-primary">Technician Profile</h2>
+              <button onClick={() => setSelected(null)} className="text-content-muted hover:text-content-primary">
                 <FiX className="w-5 h-5" />
               </button>
             </div>
-            <div className="p-6 space-y-5">
+            <div className="modal-body space-y-5">
               <div className="flex items-center gap-4">
                 <img
                   src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${selected.id}`}
                   alt={selected.name}
-                  className="w-16 h-16 rounded-full border-2 border-primary-100"
+                  className="w-16 h-16 rounded-full ring-2 ring-border"
                 />
                 <div>
-                  <p className="text-xl font-bold text-gray-900">{selected.name || selected.username}</p>
-                  <p className="text-sm text-gray-500">{selected.email}</p>
+                  <p className="text-xl font-bold text-content-primary">{selected.name || selected.username}</p>
+                  <p className="text-sm text-content-muted">{selected.email}</p>
                   <div className="mt-1">
                     <AvailBadge status={profile(selected)?.availability_status} />
                   </div>
@@ -107,29 +107,29 @@ export default function TechnicianManagement() {
               {profile(selected) && (
                 <>
                   <div>
-                    <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Bio</p>
-                    <p className="text-sm text-gray-700">{profile(selected).bio || '—'}</p>
+                    <p className="text-xs font-bold text-content-muted uppercase tracking-widest mb-1">Bio</p>
+                    <p className="text-sm text-content-body">{profile(selected).bio || '—'}</p>
                   </div>
                   <div>
-                    <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Skills</p>
+                    <p className="text-xs font-bold text-content-muted uppercase tracking-widest mb-2">Skills</p>
                     <div className="flex flex-wrap gap-2">
                       {(profile(selected).skills || []).map((s) => (
-                        <span key={s} className="px-3 py-1 bg-primary-100 text-primary-700 rounded-full text-xs font-semibold">
+                        <span key={s} className="px-3 py-1 bg-[#1e2d4a]/30 text-[#7eb8f7] rounded-full text-xs font-semibold">
                           {s}
                         </span>
                       ))}
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-gray-50 rounded-xl p-4 text-center">
-                      <p className="text-2xl font-bold text-gray-900">{profile(selected).total_jobs ?? 0}</p>
-                      <p className="text-xs text-gray-500 mt-1">Total Jobs</p>
+                    <div className="bg-surface-inner rounded-md p-4 text-center">
+                      <p className="text-2xl font-bold text-content-primary">{profile(selected).total_jobs ?? 0}</p>
+                      <p className="text-xs text-content-muted mt-1">Total Jobs</p>
                     </div>
-                    <div className="bg-gray-50 rounded-xl p-4 text-center">
+                    <div className="bg-surface-inner rounded-md p-4 text-center">
                       <div className="flex justify-center mb-1">
                         <Stars rating={profile(selected).rating} />
                       </div>
-                      <p className="text-xs text-gray-500">Average Rating</p>
+                      <p className="text-xs text-content-muted">Average Rating</p>
                     </div>
                   </div>
                 </>
@@ -141,8 +141,8 @@ export default function TechnicianManagement() {
 
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Technician Management</h1>
-        <p className="text-gray-600 mt-2">
+        <h1 className="text-3xl font-bold text-content-primary">Technician Management</h1>
+        <p className="text-content-body mt-2">
           All registered technicians ({technicians.length} total)
         </p>
       </div>
@@ -151,7 +151,7 @@ export default function TechnicianManagement() {
       <div className="card mb-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="relative md:col-span-2">
-            <FiSearch className="absolute left-3 top-3.5 text-gray-400" />
+            <FiSearch className="absolute left-3 top-3.5 text-content-muted" />
             <input
               id="tech-search"
               type="text"
@@ -173,7 +173,7 @@ export default function TechnicianManagement() {
             <option value="offline">Offline</option>
           </select>
         </div>
-        <p className="mt-3 text-sm text-gray-400">
+        <p className="mt-3 text-sm text-content-muted">
           Showing {Math.min(paginated.length, filtered.length)} of {filtered.length} results
         </p>
       </div>
@@ -181,13 +181,13 @@ export default function TechnicianManagement() {
       {/* Content */}
       {loading ? (
         <div className="text-center py-20">
-          <div className="animate-spin w-10 h-10 border-4 border-primary-600 border-t-transparent rounded-full mx-auto mb-4" />
-          <p className="text-gray-400">Loading technicians...</p>
+          <div className="animate-spin w-10 h-10 border-4 border-[#7eb8f7] border-t-transparent rounded-full mx-auto mb-4" />
+          <p className="text-content-muted">Loading technicians...</p>
         </div>
       ) : paginated.length === 0 ? (
         <div className="card text-center py-20">
-          <FiTool className="w-12 h-12 text-gray-200 mx-auto mb-4" />
-          <p className="text-gray-400 text-lg">No technicians found</p>
+          <FiTool className="w-12 h-12 text-content-hint mx-auto mb-4" />
+          <p className="text-content-muted text-lg">No technicians found</p>
         </div>
       ) : (
         <>
@@ -197,20 +197,20 @@ export default function TechnicianManagement() {
               return (
                 <div
                   key={tech.id}
-                  className="card border border-gray-100 hover:border-primary-200 hover:shadow-lg transition-all duration-200"
+                  className="card border border-border hover:border-[#7eb8f7]/40 hover:shadow-lg transition-all duration-200"
                 >
                   <div className="flex items-start gap-4">
                     <img
                       src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${tech.id}`}
                       alt={tech.name}
-                      className="w-14 h-14 rounded-full border-2 border-gray-100 flex-shrink-0"
+                      className="w-14 h-14 rounded-full ring-2 ring-border flex-shrink-0"
                     />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-2">
-                        <p className="font-bold text-gray-900 truncate">{tech.name || tech.username}</p>
+                        <p className="font-bold text-content-primary truncate">{tech.name || tech.username}</p>
                         <AvailBadge status={p?.availability_status} />
                       </div>
-                      <p className="text-xs text-gray-400 truncate">{tech.email}</p>
+                      <p className="text-xs text-content-muted truncate">{tech.email}</p>
                       {p && <div className="mt-1"><Stars rating={p.rating} /></div>}
                     </div>
                   </div>
@@ -218,12 +218,12 @@ export default function TechnicianManagement() {
                   {p?.skills?.length > 0 && (
                     <div className="mt-4 flex flex-wrap gap-1.5">
                       {p.skills.slice(0, 3).map((s) => (
-                        <span key={s} className="px-2 py-0.5 bg-primary-50 text-primary-700 rounded-full text-xs font-medium">
+                        <span key={s} className="px-2 py-0.5 bg-[#1e2d4a]/30 text-[#7eb8f7] rounded-full text-xs font-medium">
                           {s}
                         </span>
                       ))}
                       {p.skills.length > 3 && (
-                        <span className="px-2 py-0.5 bg-gray-100 text-gray-500 rounded-full text-xs">
+                        <span className="px-2 py-0.5 bg-surface-inner text-content-muted rounded-full text-xs">
                           +{p.skills.length - 3}
                         </span>
                       )}
@@ -231,13 +231,13 @@ export default function TechnicianManagement() {
                   )}
 
                   {p?.bio && (
-                    <p className="mt-3 text-xs text-gray-400 line-clamp-2">{p.bio}</p>
+                    <p className="mt-3 text-xs text-content-muted line-clamp-2">{p.bio}</p>
                   )}
 
-                  <div className="mt-4 pt-4 border-t border-gray-100 flex gap-2">
+                  <div className="mt-4 pt-4 border-t border-border flex gap-2">
                     <div className="flex-1 text-center">
-                      <p className="text-lg font-bold text-gray-900">{p?.total_jobs ?? 0}</p>
-                      <p className="text-xs text-gray-400">Jobs Done</p>
+                      <p className="text-lg font-bold text-content-primary">{p?.total_jobs ?? 0}</p>
+                      <p className="text-xs text-content-muted">Jobs Done</p>
                     </div>
                     <button
                       id={`view-tech-${tech.id}`}
@@ -268,7 +268,7 @@ export default function TechnicianManagement() {
                   key={p}
                   onClick={() => setCurrentPage(p)}
                   className={`w-10 h-10 rounded-lg font-semibold transition-colors ${
-                    p === currentPage ? 'bg-primary-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    p === currentPage ? 'bg-[#1e2d4a] text-[#7eb8f7]' : 'bg-surface-inner text-content-body hover:bg-[#2a2d3d]'
                   }`}
                 >
                   {p}

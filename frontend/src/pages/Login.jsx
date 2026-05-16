@@ -34,28 +34,28 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-600 to-primary-900 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-page flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Card */}
-        <div className="bg-white rounded-2xl shadow-2xl p-8 animate-fade-in">
+        <div className="bg-surface rounded-md border border-border shadow-2xl p-8 animate-fade-in">
           {/* Header */}
           <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-primary-100 rounded-full mb-4">
-              <FiUser className="w-8 h-8 text-primary-600" />
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-[#1e2d4a] rounded-full mb-4">
+              <FiUser className="w-8 h-8 text-[#7eb8f7]" />
             </div>
-            <h1 className="text-3xl font-bold text-gray-900">Welcome Back</h1>
-            <p className="text-gray-600 mt-2">Sign in to your account</p>
+            <h1 className="text-3xl font-bold text-content-primary">Welcome Back</h1>
+            <p className="text-content-body mt-2">Sign in to your account</p>
           </div>
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Email */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
+              <label className="label">
                 Email Address
               </label>
-              <div className="relative">
-                <FiMail className="absolute left-3 top-3 text-gray-400" />
+              <div className="input-wrapper">
+                <FiMail className="input-icon" />
                 <input
                   type="email"
                   name="email"
@@ -71,11 +71,11 @@ export default function Login() {
 
             {/* Password */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
+              <label className="label">
                 Password
               </label>
-              <div className="relative">
-                <FiLock className="absolute left-3 top-3 text-gray-400" />
+              <div className="input-wrapper">
+                <FiLock className="input-icon" />
                 <input
                   type="password"
                   name="password"
@@ -91,29 +91,29 @@ export default function Login() {
 
             {/* Error */}
             {error && (
-              <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm">
+              <div className="bg-status-danger-bg border border-[#5c2020] text-status-danger-text px-4 py-3 rounded-sm text-sm">
                 {error}
               </div>
             )}
 
             {/* Submit */}
-            <button type="submit" id="login-submit" disabled={loading} className="btn-primary w-full flex items-center justify-center gap-2">
+            <button type="submit" id="login-submit" disabled={loading} className="btn-submit">
               {loading ? 'Signing in...' : 'Sign In'}
-              <FiArrowRight />
+              <FiArrowRight className="btn-submit-icon" />
             </button>
           </form>
 
           {/* Divider */}
           <div className="my-6 flex items-center gap-4">
-            <div className="flex-1 h-px bg-gray-300"></div>
-            <span className="text-gray-500 text-sm">or</span>
-            <div className="flex-1 h-px bg-gray-300"></div>
+            <div className="flex-1 h-px bg-border"></div>
+            <span className="text-content-muted text-sm">or</span>
+            <div className="flex-1 h-px bg-border"></div>
           </div>
 
           {/* Register Link */}
-          <p className="text-center text-gray-600">
+          <p className="text-center text-content-body">
             Don't have an account?{' '}
-            <Link to="/register" className="text-primary-600 font-semibold hover:text-primary-700">
+            <Link to="/register" className="text-[#7eb8f7] font-semibold hover:text-[#a0cffa]">
               Sign Up
             </Link>
           </p>

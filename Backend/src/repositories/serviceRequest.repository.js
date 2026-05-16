@@ -23,7 +23,7 @@ const ServiceRequestRepository = AppDataSource.getRepository(ServiceRequest).ext
     async getAllServiceRequests() {
         return await this.find({
             relations: ["customer", "category", "status_history"],
-            order: { id: "DESC" }
+            order: { created_at: "DESC" }
         });
     },
 
@@ -48,7 +48,7 @@ const ServiceRequestRepository = AppDataSource.getRepository(ServiceRequest).ext
         return await this.find({
             where: { customer: { id: customerId } },
             relations: ["category", "status_history"],
-            order: { id: "DESC" }
+            order: { created_at: "DESC" }
         });
     },
 

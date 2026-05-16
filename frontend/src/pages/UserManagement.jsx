@@ -86,14 +86,14 @@ export default function UserManagement() {
             alt={row.original.name}
             className="w-8 h-8 rounded-full"
           />
-          <span className="font-semibold text-gray-900">{row.original.name || row.original.username}</span>
+          <span className="font-semibold text-content-primary">{row.original.name || row.original.username}</span>
         </div>
       ),
     },
     {
       accessorKey: 'email',
       header: 'Email',
-      cell: ({ getValue }) => <span className="text-gray-600">{getValue()}</span>,
+      cell: ({ getValue }) => <span className="text-content-body">{getValue()}</span>,
     },
     {
       id: 'role',
@@ -101,13 +101,13 @@ export default function UserManagement() {
       header: 'Role',
       cell: ({ getValue }) => {
         const roleColors = {
-          admin: 'bg-red-100 text-red-700',
-          technician: 'bg-blue-100 text-blue-700',
-          customer: 'bg-green-100 text-green-700',
+          admin: 'bg-status-danger-bg text-status-danger-text',
+          technician: 'bg-status-info-bg text-status-info-text',
+          customer: 'bg-status-success-bg text-status-success-text',
         }
         const r = getValue()
         return (
-          <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold capitalize ${roleColors[r] || 'bg-gray-100 text-gray-700'}`}>
+          <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold capitalize ${roleColors[r] || 'bg-surface-inner text-content-body'}`}>
             {r}
           </span>
         )
@@ -117,7 +117,7 @@ export default function UserManagement() {
       accessorKey: 'created_at',
       header: 'Joined',
       cell: ({ getValue }) => (
-        <span className="text-gray-600">
+        <span className="text-content-body">
           {getValue() ? new Date(getValue()).toLocaleDateString() : '—'}
         </span>
       ),
@@ -127,15 +127,15 @@ export default function UserManagement() {
       header: 'Actions',
       cell: ({ row }) => (
         <div className="flex items-center justify-end gap-2">
-          <button id={`view-user-${row.original.id}`} className="p-2 hover:bg-gray-100 rounded-lg" title="View">
-            <FiEye className="w-4 h-4 text-gray-600" />
+          <button id={`view-user-${row.original.id}`} className="p-2 hover:bg-surface-inner rounded-lg" title="View">
+            <FiEye className="w-4 h-4 text-content-body" />
           </button>
           <button
             id={`delete-user-${row.original.id}`}
             onClick={() => handleDeleteUser(row.original.id)}
-            className="p-2 hover:bg-red-100 rounded-lg" title="Delete"
+            className="p-2 hover:bg-status-danger-bg rounded-lg" title="Delete"
           >
-            <FiTrash2 className="w-4 h-4 text-red-600" />
+            <FiTrash2 className="w-4 h-4 text-status-danger-text" />
           </button>
         </div>
       ),
@@ -165,8 +165,8 @@ export default function UserManagement() {
     <div className="p-8">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">User Management</h1>
-          <p className="text-gray-600 mt-2">Manage all system users ({users.length} total)</p>
+          <h1 className="text-3xl font-bold text-content-primary">User Management</h1>
+          <p className="text-content-body mt-2">Manage all system users ({users.length} total)</p>
         </div>
         <button
           id="add-user-btn"
@@ -179,10 +179,10 @@ export default function UserManagement() {
 
       {showCreateForm && (
         <div className="card mb-6 p-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Create New User</h2>
+          <h2 className="text-xl font-semibold text-content-primary mb-4">Create New User</h2>
           <form onSubmit={handleCreateUser} className="grid gap-4 md:grid-cols-2">
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Full Name</label>
+              <label className="label">Full Name</label>
               <input
                 type="text"
                 name="name"
@@ -194,7 +194,7 @@ export default function UserManagement() {
               />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Username</label>
+              <label className="label">Username</label>
               <input
                 type="text"
                 name="username"
@@ -206,7 +206,7 @@ export default function UserManagement() {
               />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Email</label>
+              <label className="label">Email</label>
               <input
                 type="email"
                 name="email"
@@ -218,7 +218,7 @@ export default function UserManagement() {
               />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Password</label>
+              <label className="label">Password</label>
               <input
                 type="password"
                 name="password"
@@ -230,7 +230,7 @@ export default function UserManagement() {
               />
             </div>
             <div className="md:col-span-2">
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Role</label>
+              <label className="label">Role</label>
               <select
                 name="roleName"
                 value={newUser.roleName}
@@ -243,7 +243,7 @@ export default function UserManagement() {
               </select>
             </div>
             {createError && (
-              <div className="md:col-span-2 bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm">
+              <div className="md:col-span-2 bg-status-danger-bg border border-status-danger-text/30 text-status-danger-text px-4 py-3 rounded-lg text-sm">
                 {createError}
               </div>
             )}
@@ -270,7 +270,7 @@ export default function UserManagement() {
       {/* Search */}
       <div className="card mb-6">
         <div className="relative">
-          <FiSearch className="absolute left-3 top-3 text-gray-400" />
+          <FiSearch className="absolute left-3 top-3 text-content-muted" />
           <input
             type="text" id="user-search"
             placeholder="Search by name, email, or role..."
@@ -283,17 +283,17 @@ export default function UserManagement() {
 
       {/* TanStack Table */}
       {loading ? (
-        <div className="text-center py-12">Loading users...</div>
+        <div className="text-center py-12 text-content-muted">Loading users...</div>
       ) : (
         <div className="card overflow-x-auto">
           <table className="w-full" id="users-table">
             <thead>
               {table.getHeaderGroups().map((headerGroup) => (
-                <tr key={headerGroup.id} className="border-b">
+                <tr key={headerGroup.id} className="border-b border-border">
                   {headerGroup.headers.map((header) => (
                     <th
                       key={header.id}
-                      className="px-6 py-3 text-left text-sm font-semibold text-gray-900 cursor-pointer select-none hover:bg-gray-50"
+                      className="px-6 py-3 text-left text-sm font-semibold text-content-primary cursor-pointer select-none hover:bg-surface-inner"
                       onClick={header.column.getToggleSortingHandler()}
                     >
                       <div className="flex items-center gap-1">
@@ -310,7 +310,7 @@ export default function UserManagement() {
             </thead>
             <tbody>
               {table.getRowModel().rows.map((row) => (
-                <tr key={row.id} className="border-b hover:bg-gray-50 transition-colors">
+                <tr key={row.id} className="border-b border-border hover:bg-surface-inner transition-colors">
                   {row.getVisibleCells().map((cell) => (
                     <td key={cell.id} className="px-6 py-4">
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -323,15 +323,15 @@ export default function UserManagement() {
 
           {table.getRowModel().rows.length === 0 && (
             <div className="text-center py-12">
-              <FiUsers className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-600">No users found</p>
+              <FiUsers className="w-12 h-12 text-content-hint mx-auto mb-4" />
+              <p className="text-content-body">No users found</p>
             </div>
           )}
 
           {/* Pagination */}
-          <div className="flex items-center justify-between px-6 py-4 border-t">
-            <div className="text-sm text-gray-600">
-              Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()} 
+          <div className="flex items-center justify-between px-6 py-4 border-t border-border">
+            <div className="text-sm text-content-muted">
+              Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
               {' '}({table.getFilteredRowModel().rows.length} results)
             </div>
             <div className="flex items-center gap-2">

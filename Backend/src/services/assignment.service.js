@@ -45,6 +45,7 @@ const AssignmentService = {
 
     /**
      * applyForRequest: Allow technicians to apply for available service requests
+     * Status: "applied" - pending customer review
      */
     async applyForRequest(requestId, technicianId) {
         const request = await ServiceRequestRepository.findServiceRequestById(requestId);
@@ -57,29 +58,33 @@ const AssignmentService = {
 
         await this.checkTechnicianAvailability(technicianId);
 
-        // Check if technician already applied
-        const existing = await AssignmentRepository.findOne({
-            where: { 
-                request: { id: requestId },
-                technician: { id: technicianId },
-                assigned_by: null
-            }
-        });
-
+        // Check if technician already applied (any status: applied, accepted, rejected)
+        const existing = await AssignmentRepository.findExistingApplication(requestId, technicianId);
         if (existing) {
-            throw new Error("You have already applied for this request.");
+            if (existing.status === "applied") {
+                throw new Error("You have already applied for this request.");
+            }
+            if (existing.status === "accepted") {
+                throw new Error("You have already been accepted for this request.");
+            }
+            if (existing.status === "rejected") {
+                throw new Error("Your application for this request was rejected.");
+            }
+            throw new Error("You cannot apply for this request again.");
         }
 
-        // Create application (assigned_by is NULL to indicate pending application)
+        // Create application with status "applied"
         return await AssignmentRepository.createAssignment({
             request: { id: requestId },
             technician: { id: technicianId },
-            assigned_by: null
+            assigned_by: null,
+            status: "applied",
         });
     },
 
     /**
      * getRequestApplications: View pending applications for a request (for customers)
+     * Only returns applications with status "applied"
      */
     async getRequestApplications(requestId) {
         return await AssignmentRepository.getRequestApplications(requestId);
@@ -87,62 +92,79 @@ const AssignmentService = {
 
     /**
      * acceptApplication: Customer accepts one of the pending applications
+     * - Sets accepted application status to "accepted"
+     * - Sets all other applications for this request to "rejected"
+     * - Updates request status to "assigned"
+     * - Marks technician as busy
      */
     async acceptApplication(applicationId, customerId) {
         const application = await AssignmentRepository.findOne({
             where: { id: applicationId },
-            relations: ["technician", "request"]
+            relations: ["technician", "request", "request.customer"]
         });
 
         if (!application) throw new Error("Application not found.");
-        if (application.assigned_by !== null) throw new Error("This application was already accepted.");
-        if (application.request.customer.id !== customerId) throw new Error("Unauthorized.");
+        if (application.status === "accepted") throw new Error("This application was already accepted.");
+        if (application.status === "rejected") throw new Error("This application was already rejected.");
+        if (!application.request || !application.request.customer || application.request.customer.id !== customerId) {
+            throw new Error("Unauthorized.");
+        }
 
         return await AppDataSource.transaction(async (manager) => {
             const assignmentRepo = manager.withRepository(AssignmentRepository);
             const historyRepo = manager.withRepository(StatusHistoryRepository);
             const techRepo = manager.withRepository(TechnicianRepository);
 
-            // 1. Accept the application
-            await assignmentRepo.update(applicationId, { assigned_by: { id: customerId } });
-
-            // 2. Reject all other applications for this request
-            const otherApps = await AssignmentRepository.find({
-                where: { 
-                    request: { id: application.request.id },
-                    assigned_by: null
-                }
+            // 1. Accept the selected application
+            await assignmentRepo.update(applicationId, {
+                status: "accepted",
+                assigned_by: { id: customerId },
             });
 
-            for (const app of otherApps) {
-                if (app.id !== applicationId) {
-                    await assignmentRepo.delete(app.id);
-                }
-            }
+            // 2. Reject all other APPLIED applications for this request
+            //    (The selected app is already "accepted" so it won't be affected)
+            await assignmentRepo.update(
+                {
+                    request: { id: application.request.id },
+                    status: "applied",
+                },
+                { status: "rejected" }
+            );
 
-            // 3. Update request status
+            // 3. Update request status to "assigned"
             await historyRepo.createStatusHistory(application.request.id, customerId, "assigned");
 
             // 4. Mark technician as busy
-            await techRepo.update({ user: { id: application.technician.id } }, { availability_status: "busy" });
+            await techRepo.update(
+                { user: { id: application.technician.id } },
+                { availability_status: "busy" }
+            );
 
-            return { success: true };
+            return { success: true, acceptedTechnicianId: application.technician.id };
         });
     },
 
     /**
      * rejectApplication: Customer rejects an application
+     * - Sets application status to "rejected" instead of deleting
      */
     async rejectApplication(applicationId, customerId) {
         const application = await AssignmentRepository.findOne({
             where: { id: applicationId },
-            relations: ["request"]
+            relations: ["request", "request.customer"]
         });
 
         if (!application) throw new Error("Application not found.");
-        if (application.request.customer.id !== customerId) throw new Error("Unauthorized.");
+        if (application.status !== "applied") {
+            throw new Error("This application cannot be rejected (already " + application.status + ").");
+        }
+        if (!application.request || !application.request.customer || application.request.customer.id !== customerId) {
+            throw new Error("Unauthorized.");
+        }
 
-        return await AssignmentRepository.delete(applicationId);
+        // Mark as rejected instead of deleting
+        await AssignmentRepository.update(applicationId, { status: "rejected" });
+        return { success: true };
     },
 
     /**
@@ -156,27 +178,28 @@ const AssignmentService = {
             const historyRepo = manager.withRepository(StatusHistoryRepository);
             const techRepo = manager.withRepository(TechnicianRepository);
 
-            // 1. Create direct assignment with adminId
+            // 1. Create direct assignment with adminId, status "accepted"
             const assignment = await assignmentRepo.save({
                 request: { id: requestId },
                 technician: { id: technicianId },
-                assigned_by: { id: adminId }
+                assigned_by: { id: adminId },
+                status: "accepted",
             });
 
-            // 2. Delete any pending applications
-            const pendingApps = await AssignmentRepository.find({
-                where: { request: { id: requestId }, assigned_by: null }
-            });
-
-            for (const app of pendingApps) {
-                await assignmentRepo.delete(app.id);
-            }
+            // 2. Reject any pending applications for this request
+            await assignmentRepo.update(
+                { request: { id: requestId }, status: "applied" },
+                { status: "rejected" }
+            );
 
             // 3. Log Status History
             await historyRepo.createStatusHistory(requestId, adminId, "assigned");
 
             // 4. Mark Technician as busy
-            await techRepo.update({ user: { id: technicianId } }, { availability_status: "busy" });
+            await techRepo.update(
+                { user: { id: technicianId } },
+                { availability_status: "busy" }
+            );
 
             return assignment;
         });
@@ -189,14 +212,18 @@ const AssignmentService = {
         return await AppDataSource.transaction(async (manager) => {
             const techRepo = manager.withRepository(TechnicianRepository);
             const assignmentRepo = manager.withRepository(AssignmentRepository);
+
+            // Find current active assignment
             const currentAssignment = await AssignmentRepository.getActiveAssignmentByRequest(requestId);
 
             // Mark old technician as available again
             if (currentAssignment) {
                 await techRepo.update(
-                    { user: { id: currentAssignment.technician.id } }, 
+                    { user: { id: currentAssignment.technician.id } },
                     { availability_status: "available" }
                 );
+                // Mark old assignment as rejected
+                await assignmentRepo.update(currentAssignment.id, { status: "rejected" });
             }
 
             // Perform new assignment
@@ -216,7 +243,21 @@ const AssignmentService = {
      */
     async getTechnicianAssignments(technicianId) {
         return await AssignmentRepository.getAssignmentsByTechnician(technicianId);
-    }
+    },
+
+    /**
+     * getTechnicianAppliedAssignments: Only "applied" status assignments
+     */
+    async getTechnicianAppliedAssignments(technicianId) {
+        return await AssignmentRepository.getTechnicianAssignmentsByStatus(technicianId, ["applied"]);
+    },
+
+    /**
+     * getTechnicianActiveAssignments: Only "accepted" status assignments
+     */
+    async getTechnicianActiveAssignments(technicianId) {
+        return await AssignmentRepository.getTechnicianAssignmentsByStatus(technicianId, ["accepted"]);
+    },
 };
 
 export default AssignmentService;

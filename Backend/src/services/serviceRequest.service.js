@@ -64,6 +64,7 @@ const ServiceRequestService = {
                 ? { id: requestData.categoryId }
                 : requestData.category,
             preferred_time: requestData.preferred_time ?? requestData.preferredDate,
+            price: requestData.price ? parseFloat(requestData.price) : 0.00,
         };
 
         return await AppDataSource.transaction(async (manager) => {
