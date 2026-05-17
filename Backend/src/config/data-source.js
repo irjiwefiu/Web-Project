@@ -41,7 +41,7 @@ const AppDataSource = new DataSource({
   ...dbConfig,
 
   synchronize: false, // use migrations instead
-  logging: true,
+  logging: false,
 
   entities: [
     Role,
