@@ -30,26 +30,40 @@ const PORT = process.env.PORT || 3000;
 /**
  * Middleware Stack
  */
-const allowedOrigins = [
-    "http://localhost:5173",
-    "http://localhost:5174",
-    "http://127.0.0.1:5173",
-    "http://127.0.0.1:5174",
-];
-
-// Add Vercel preview/production URLs from env
-if (process.env.FRONTEND_URL) {
-    allowedOrigins.push(process.env.FRONTEND_URL);
-}
-
 app.use(cors({
     origin: (origin, callback) => {
-        // Allow requests with no origin (server-to-server, Postman, etc.)
-        if (!origin || allowedOrigins.includes(origin)) {
-            callback(null, true);
-        } else {
-            callback(new Error("Not allowed by CORS"));
+        // Allow requests with no origin (server-to-server, Postman, mobile apps)
+        if (!origin) {
+            return callback(null, true);
         }
+
+        // Allow local development origins
+        const localOrigins = [
+            "http://localhost:5173",
+            "http://localhost:5174",
+            "http://127.0.0.1:5173",
+            "http://127.0.0.1:5174",
+        ];
+        if (localOrigins.includes(origin)) {
+            return callback(null, true);
+        }
+
+        // Allow the explicit FRONTEND_URL from env vars
+        if (process.env.FRONTEND_URL && origin === process.env.FRONTEND_URL) {
+            return callback(null, true);
+        }
+
+        // Allow any Vercel preview deployment (*.vercel.app)
+        if (origin.endsWith(".vercel.app") || origin === "https://vercel.app") {
+            return callback(null, true);
+        }
+
+        // Allow the Vercel-deployed backend's own domain (for health checks, etc.)
+        if (process.env.VERCEL_URL && origin.endsWith(process.env.VERCEL_URL)) {
+            return callback(null, true);
+        }
+
+        callback(new Error("Not allowed by CORS"));
     },
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
@@ -146,3 +160,4 @@ if (process.env.VERCEL !== "1") {
 }
 
 export default app;
+
