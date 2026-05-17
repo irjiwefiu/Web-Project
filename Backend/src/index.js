@@ -2,12 +2,12 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import "reflect-metadata";
-import  AppDataSource  from "./config/data-source.js";
+import AppDataSource from "./config/data-source.js";
 import { ensureDatabaseColumns } from "./config/ensureColumns.js";
 
 // Import middlewares
-import  errorMiddleware  from "./middlewares/error.middleware.js";
-import  requestLogger  from "./middlewares/requestLogger.middleware.js";
+import errorMiddleware from "./middlewares/error.middleware.js";
+import requestLogger from "./middlewares/requestLogger.middleware.js";
 
 // Import routes
 import authRoutes from "./routes/auth.routes.js";
@@ -32,34 +32,27 @@ const PORT = process.env.PORT || 3000;
  */
 app.use(cors({
     origin: (origin, callback) => {
-        // Allow requests with no origin (server-to-server, Postman, mobile apps)
+        // Allow requests with no origin (like Postman or mobile apps)
         if (!origin) {
             return callback(null, true);
         }
 
-        // Allow local development origins
         const localOrigins = [
             "http://localhost:5173",
             "http://localhost:5174",
             "http://127.0.0.1:5173",
             "http://127.0.0.1:5174",
         ];
-        if (localOrigins.includes(origin)) {
-            return callback(null, true);
-        }
 
-        // Allow the explicit FRONTEND_URL from env vars
-        if (process.env.FRONTEND_URL && origin === process.env.FRONTEND_URL) {
-            return callback(null, true);
-        }
-
-        // Allow any Vercel preview deployment (*.vercel.app)
-        if (origin.endsWith(".vercel.app") || origin === "https://vercel.app") {
-            return callback(null, true);
-        }
-
-        // Allow the Vercel-deployed backend's own domain (for health checks, etc.)
-        if (process.env.VERCEL_URL && origin.endsWith(process.env.VERCEL_URL)) {
+        // Match local development, explicit frontend variables, or any vercel deployments
+        if (
+            localOrigins.includes(origin) ||
+            (process.env.FRONTEND_URL && origin === process.env.FRONTEND_URL) ||
+            origin === "https://new-project-omega-six.vercel.app" ||
+            origin.endsWith(".vercel.app") ||
+            origin === "https://vercel.app" ||
+            (process.env.VERCEL_URL && origin.endsWith(process.env.VERCEL_URL))
+        ) {
             return callback(null, true);
         }
 
@@ -69,22 +62,37 @@ app.use(cors({
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"]
 }));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(requestLogger);
 
 /**
- * Database Initialization
+ * Serverless Database Connection Driver (Lazy Loading Middleware)
+ * Prevents cold-start timeouts and container crashes on Vercel
  */
-AppDataSource.initialize()
-    .then(async () => {
-        console.log("✅ Database connected successfully");
-        await ensureDatabaseColumns();
-    })
-    .catch((error) => {
-        console.error("❌ Database connection failed:", error);
-        process.exit(1);
-    });
+const connectDatabase = async (req, res, next) => {
+    try {
+        if (!AppDataSource.isInitialized) {
+            console.log("🔄 Initializing database connection...");
+            await AppDataSource.initialize();
+            console.log("✅ Database connected successfully");
+            await ensureDatabaseColumns();
+        }
+        next();
+    } catch (error) {
+        console.error("❌ Database connection failed on request:", error);
+        // Return a clean 500 error status with proper headers rather than crashing the instance
+        res.status(500).json({
+            success: false,
+            message: "Database connection initialization failed",
+            error: process.env.NODE_ENV === "development" ? error.message : {}
+        });
+    }
+};
+
+// Route through database management middleware before checking routes
+app.use(connectDatabase);
 
 /**
  * Health Check Endpoint
@@ -140,8 +148,8 @@ if (process.env.VERCEL !== "1") {
     const server = app.listen(PORT, () => {
         console.log(`
 ╔════════════════════════════════════════╗
-║   Service Management Backend API        ║
-║   Server running on port ${PORT}            ║
+║   Service Management Backend API       ║
+║   Server running on port ${PORT}        ║
 ║   Environment: ${process.env.NODE_ENV || "development"}     ║
 ╚════════════════════════════════════════╝
         `);
@@ -160,4 +168,3 @@ if (process.env.VERCEL !== "1") {
 }
 
 export default app;
-
