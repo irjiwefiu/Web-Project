@@ -123,9 +123,12 @@ const DashboardController = {
             );
             const completedRequests = serviceRequests.filter((r) => r.status === "completed");
 
-            // Calculate total spent on completed requests
+            // Calculate total spent only on completed AND paid requests
             const totalSpent = completedRequests.reduce((sum, req) => {
-                return sum + (parseFloat(req.price) || 0);
+                if (req.is_paid) {
+                    return sum + (parseFloat(req.price) || 0);
+                }
+                return sum;
             }, 0);
 
             // Enrich each request with application counts and assigned technician info

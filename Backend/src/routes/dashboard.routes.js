@@ -64,4 +64,16 @@ router.get(
     DashboardController.getTechnicianDashboard
 );
 
+/**
+ * GET /dashboard/technician/profile
+ * Returns technician profile (skills, bio, service_area, etc.)
+ * Protected: Technician only
+ */
+router.get(
+    "/technician/profile",
+    authenticateUser,
+    authorizeRoles("technician"),
+    DashboardController.getTechnicianProfile
+);
+
 export default router;

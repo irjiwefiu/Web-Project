@@ -128,7 +128,7 @@ function BookModal({ technician, onClose, onSuccess }) {
   )
 }
 
-function TechnicianCard({ technician, onBook }) {
+function TechnicianCard({ technician, onBook, onViewProfile }) {
   return (
     <div className="card hover:shadow-xl transition-shadow">
       <div className="flex items-start gap-4">
@@ -154,8 +154,95 @@ function TechnicianCard({ technician, onBook }) {
         </div>
       </div>
       <div className="mt-4 pt-4 border-t border-border flex gap-2">
-        <button className="flex-1 btn-secondary text-sm">View Profile</button>
+        <button onClick={() => onViewProfile(technician)} className="flex-1 btn-secondary text-sm">View Profile</button>
         <button onClick={() => onBook(technician)} className="flex-1 btn-accent text-sm">Book Now</button>
+      </div>
+    </div>
+  )
+}
+
+function TechnicianProfileModal({ technician, onClose }) {
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-content max-w-md w-full max-h-[90vh] overflow-y-auto animate-slide-up" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-header">
+          <h2 className="text-2xl font-bold text-content-primary">Technician Profile</h2>
+          <button onClick={onClose} className="btn-icon">
+            <FiX className="w-5 h-5" />
+          </button>
+        </div>
+        <div className="modal-body space-y-5">
+          <div className="flex items-center gap-4">
+            <img
+              src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${technician.id}`}
+              alt={technician.name}
+              className="w-20 h-20 rounded-full ring-2 ring-border"
+            />
+            <div>
+              <h3 className="text-xl font-bold text-content-primary">{technician.name}</h3>
+              <div className="flex items-center gap-2 mt-1">
+                <FiStar className="w-4 h-4 text-yellow-500" />
+                <span className="text-sm font-semibold text-content-primary">{technician.rating || 'N/A'}</span>
+                <span className="text-xs text-content-muted">({technician.totalReviews || 0} reviews)</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-surface-inner rounded-lg p-4 grid grid-cols-2 gap-4 text-sm">
+            <div>
+              <p className="text-content-muted">Location</p>
+              <p className="font-semibold text-content-primary flex items-center gap-1">
+                <FiMapPin className="w-4 h-4" /> {technician.area || technician.service_area || 'N/A'}
+              </p>
+            </div>
+            <div>
+              <p className="text-content-muted">Hourly Rate</p>
+              <p className="font-semibold text-content-primary flex items-center gap-1">
+                <FiDollarSign className="w-4 h-4" /> ${technician.hourlyRate || technician.hourly_rate || 0}/hr
+              </p>
+            </div>
+            <div>
+              <p className="text-content-muted">Experience</p>
+              <p className="font-semibold text-content-primary">{technician.yearsExperience || technician.years_experience || 'N/A'} years</p>
+            </div>
+            <div>
+              <p className="text-content-muted">Completed Jobs</p>
+              <p className="font-semibold text-content-primary">{technician.completedJobs || technician.completed_jobs || 0}</p>
+            </div>
+          </div>
+
+          {technician.bio && (
+            <div>
+              <h4 className="font-semibold text-content-primary mb-2">Bio</h4>
+              <p className="text-content-body text-sm leading-relaxed">{technician.bio}</p>
+            </div>
+          )}
+
+          {technician.skills && (Array.isArray(technician.skills) ? technician.skills.length > 0 : typeof technician.skills === 'string' && technician.skills.length > 0) && (
+            <div>
+              <h4 className="font-semibold text-content-primary mb-2">Skills</h4>
+              <div className="flex flex-wrap gap-2">
+                {(Array.isArray(technician.skills) ? technician.skills : typeof technician.skills === 'string' ? JSON.parse(technician.skills) : []).map((skill, i) => (
+                  <span key={i} className="badge badge-info">{skill}</span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {technician.certifications && (Array.isArray(technician.certifications) ? technician.certifications.length > 0 : false) && (
+            <div>
+              <h4 className="font-semibold text-content-primary mb-2">Certifications</h4>
+              <div className="flex flex-wrap gap-2">
+                {(Array.isArray(technician.certifications) ? technician.certifications : []).map((cert, i) => (
+                  <span key={i} className="badge badge-success">{cert}</span>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+        <div className="modal-footer">
+          <button onClick={onClose} className="btn-secondary">Close</button>
+        </div>
       </div>
     </div>
   )
@@ -168,6 +255,7 @@ export default function FindTechnicians() {
   const [sortConfig, setSortConfig] = useState({ key: 'name', direction: 'asc' })
   const [currentPage, setCurrentPage] = useState(1)
   const [bookTechnician, setBookTechnician] = useState(null)
+  const [viewProfile, setViewProfile] = useState(null)
   const [toast, setToast] = useState(null)
   const itemsPerPage = 6
 
@@ -337,7 +425,7 @@ export default function FindTechnicians() {
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {paginatedTechnicians.map((tech) => (
-              <TechnicianCard key={tech.id} technician={tech} onBook={setBookTechnician} />
+              <TechnicianCard key={tech.id} technician={tech} onBook={setBookTechnician} onViewProfile={setViewProfile} />
             ))}
           </div>
 
@@ -382,6 +470,14 @@ export default function FindTechnicians() {
         <div className="card text-center py-12">
           <p className="text-content-body">No technicians found matching your criteria</p>
         </div>
+      )}
+
+      {/* Technician Profile Modal */}
+      {viewProfile && (
+        <TechnicianProfileModal
+          technician={viewProfile}
+          onClose={() => setViewProfile(null)}
+        />
       )}
 
       {/* Book Modal */}

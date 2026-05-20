@@ -257,7 +257,7 @@ function DetailModal({ request, onClose, onCancel, onPayment, onReview, onViewAp
           )}
           {status === 'completed' && (
             <>
-              <button onClick={() => { onClose(); onPayment(request.id); }} className="btn-primary text-sm flex items-center gap-1">
+              <button onClick={() => { onClose(); onPayment(request); }} className="btn-primary text-sm flex items-center gap-1">
                 <FiCreditCard className="w-4 h-4" /> Make Payment
               </button>
               <button onClick={() => { onClose(); onReview(request); }} className="btn-secondary text-sm flex items-center gap-1 text-[#fbbf24] hover:bg-status-warning-bg">
@@ -489,42 +489,50 @@ function ApplicationsModal({ request, onClose, onSuccess }) {
   )
 }
 
-function PaymentModal({ requestId, onClose, onSuccess }) {
+function PaymentModal({ request, onClose, onSuccess }) {
   const [processing, setProcessing] = useState(false)
-  const amount = Math.floor(Math.random() * 200) + 50
+  const price = parseFloat(request.price || 0).toFixed(2)
 
-  const handleDummyPayment = async () => {
+  const handlePayment = async () => {
     setProcessing(true)
-    await new Promise((resolve) => setTimeout(resolve, 1500))
-    setProcessing(false)
-    onSuccess(`Payment of $${amount} processed successfully! (Demo)`)
-    onClose()
+    try {
+      const response = await requestAPI.pay(request.id)
+      onSuccess(response.message || `Payment of $${price} processed successfully!`)
+      onClose()
+    } catch (error) {
+      console.error('Payment failed:', error)
+      onSuccess(`Payment failed: ${error.message || 'Unknown error'}`)
+    } finally {
+      setProcessing(false)
+    }
   }
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content max-w-sm w-full animate-slide-up" onClick={(e) => e.stopPropagation()}>
+      <div className="modal-content max-w-sm animate-slide-up" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <h2 className="text-xl font-bold text-content-primary">Dummy Payment</h2>
+          <h2 className="text-xl font-bold text-content-primary">Confirm Payment</h2>
           <button onClick={onClose} className="btn-icon">
             <FiX className="w-5 h-5" />
           </button>
         </div>
-        <div className="bg-surface-inner rounded-lg p-4 mb-4">
-          <p className="text-sm text-content-body mb-2">Request #{requestId}</p>
-          <p className="text-2xl font-bold text-content-primary">${amount}.00</p>
-          <p className="text-xs text-content-muted mt-1">Demo payment - no real charges</p>
-        </div>
-        <div className="space-y-2 mb-4">
-          <div className="flex items-center gap-2 text-sm text-content-body">
-            <FiCreditCard className="w-4 h-4" /> Card ending in ****4242
+        <div className="modal-body">
+          <div className="bg-surface-inner rounded-md p-4 mb-4">
+            <p className="text-sm text-content-body mb-2">{request.title}</p>
+            <p className="text-2xl font-bold text-content-primary">${price}</p>
+            <p className="text-xs text-content-muted mt-1">Request #{request.id}</p>
           </div>
-        </div>
-        <div className="flex gap-3">
-          <button onClick={onClose} className="btn-secondary flex-1" disabled={processing}>Cancel</button>
-          <button onClick={handleDummyPayment} className="btn-primary flex-1" disabled={processing}>
-            {processing ? 'Processing...' : 'Pay Now'}
-          </button>
+          <div className="space-y-2 mb-4">
+            <div className="flex items-center gap-2 text-sm text-content-body">
+              <FiCreditCard className="w-4 h-4" /> Card ending in ****4242
+            </div>
+          </div>
+          <div className="flex gap-3">
+            <button onClick={onClose} className="btn-secondary flex-1" disabled={processing}>Cancel</button>
+            <button onClick={handlePayment} className="btn-primary flex-1" disabled={processing}>
+              {processing ? 'Processing...' : `Pay $${price}`}
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -668,7 +676,7 @@ export default function CustomerRequests() {
   const [toast, setToast] = useState(null)
   const [detailRequest, setDetailRequest] = useState(null)
   const [applicationsRequest, setApplicationsRequest] = useState(null)
-  const [paymentRequestId, setPaymentRequestId] = useState(null)
+  const [paymentRequest, setPaymentRequest] = useState(null)
   const [reviewRequest, setReviewRequest] = useState(null)
   const [cancelRequestId, setCancelRequestId] = useState(null)
 
@@ -703,6 +711,7 @@ export default function CustomerRequests() {
   }
 
   const handlePaymentSuccess = (msg) => {
+    setPaymentRequest(null)
     showToast(msg)
     loadRequests()
   }
@@ -797,7 +806,7 @@ export default function CustomerRequests() {
                 )}
                 {request.status === 'completed' && (
                   <>
-                    <button onClick={() => setPaymentRequestId(request.id)} className="btn-primary text-sm flex items-center gap-1">
+                    <button onClick={() => setPaymentRequest(request)} className="btn-primary text-sm flex items-center gap-1">
                       <FiCreditCard className="w-4 h-4" /> Pay
                     </button>
                     <button onClick={() => setReviewRequest(request)} className="btn-secondary text-sm flex items-center gap-1 text-[#fbbf24] hover:bg-status-warning-bg">
@@ -843,10 +852,10 @@ export default function CustomerRequests() {
           onSuccess={handleApplicationSuccess}
         />
       )}
-      {paymentRequestId && (
+      {paymentRequest && (
         <PaymentModal
-          requestId={paymentRequestId}
-          onClose={() => setPaymentRequestId(null)}
+          request={paymentRequest}
+          onClose={() => setPaymentRequest(null)}
           onSuccess={handlePaymentSuccess}
         />
       )}

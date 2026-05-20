@@ -1,6 +1,113 @@
 import React, { useState, useEffect, useMemo } from 'react'
-import { FiSearch, FiX, FiChevronLeft, FiChevronRight } from 'react-icons/fi'
-import { requestAPI } from '../services/api'
+import { FiSearch, FiX, FiChevronLeft, FiChevronRight, FiEye, FiMapPin, FiClock, FiUser, FiDollarSign } from 'react-icons/fi'
+import { requestAPI, statusAPI, assignmentAPI } from '../services/api'
+
+function DetailModal({ request, onClose }) {
+  const [statusHistory, setStatusHistory] = useState([])
+  const [assignments, setAssignments] = useState([])
+  const [loadingDetails, setLoadingDetails] = useState(true)
+
+  useEffect(() => {
+    const loadDetails = async () => {
+      try {
+        const [historyRes, assignmentRes] = await Promise.all([
+          statusAPI.getHistory(request.id).catch(() => ({ data: [] })),
+          assignmentAPI.getByRequest(request.id).catch(() => ({ data: [] })),
+        ])
+        setStatusHistory(historyRes.data || [])
+        setAssignments(assignmentRes.data || [])
+      } catch (error) {
+        console.error('Failed to load details:', error)
+      } finally {
+        setLoadingDetails(false)
+      }
+    }
+    loadDetails()
+  }, [request.id])
+
+  const activeAssignment = assignments.find(a => a.status === 'accepted')
+
+  const getStatusBadge = (s) => {
+    const map = {
+      requested: 'badge-info', assigned: 'badge-info', on_the_way: 'badge-warning',
+      in_progress: 'badge-warning', completed: 'badge-success', cancelled: 'badge',
+    }
+    return map[s] || 'badge'
+  }
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-content max-w-lg w-full max-h-[90vh] overflow-y-auto animate-slide-up" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-header">
+          <h2 className="text-2xl font-bold text-content-primary">Request Details</h2>
+          <button onClick={onClose} className="btn-icon">
+            <FiX className="w-5 h-5" />
+          </button>
+        </div>
+        <div className="modal-body space-y-4">
+          <div>
+            <h3 className="text-xl font-semibold text-content-primary">{request.title}</h3>
+            <span className={`badge mt-2 inline-block ${getStatusBadge(request.status)}`}>
+              {(request.status || '').replace(/_/g, ' ')}
+            </span>
+          </div>
+          <p className="text-content-body">{request.description}</p>
+          <div className="grid grid-cols-2 gap-4 bg-surface-inner rounded-lg p-4">
+            <div className="flex items-center gap-2 text-sm text-content-body">
+              <FiMapPin className="w-4 h-4 text-content-muted" /> {request.location || 'N/A'}
+            </div>
+            <div className="flex items-center gap-2 text-sm text-content-body">
+              <FiClock className="w-4 h-4 text-content-muted" /> {new Date(request.createdAt || request.created_at).toLocaleDateString()}
+            </div>
+            <div className="text-sm text-content-body">Customer: <span className="font-medium">{request.customerName || request.customer?.name || 'Unknown'}</span></div>
+            <div className="text-sm text-content-body">Category: <span className="font-medium">{request.categoryName || request.category?.name || 'N/A'}</span></div>
+            <div className="text-sm text-content-body">Urgency: <span className="capitalize font-medium">{request.urgency}</span></div>
+            <div className="text-sm text-content-body">Price: <span className="font-semibold text-[#4ade80]">${parseFloat(request.price || 0).toFixed(2)}</span></div>
+          </div>
+
+          {activeAssignment && (
+            <div>
+              <h4 className="font-semibold text-content-primary mb-2 flex items-center gap-2">
+                <FiUser className="w-4 h-4" /> Assigned Technician
+              </h4>
+              <div className="bg-status-info-bg rounded-lg p-3 flex items-center gap-3">
+                <img
+                  src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${activeAssignment.technician?.id || activeAssignment.id}`}
+                  alt="Technician" className="w-10 h-10 rounded-full"
+                />
+                <div>
+                  <p className="font-medium text-content-primary">{activeAssignment.technician?.full_name || activeAssignment.technician?.username || 'Technician'}</p>
+                  <p className="text-xs text-content-body">Assigned: {new Date(activeAssignment.assigned_at).toLocaleDateString()}</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {statusHistory.length > 0 && (
+            <div>
+              <h4 className="font-semibold text-content-primary mb-2">Status History</h4>
+              <div className="space-y-2">
+                {statusHistory.map((h, i) => (
+                  <div key={i} className="flex items-center gap-3 text-sm">
+                    <div className="w-2 h-2 rounded-full bg-[#7eb8f7]" />
+                    <span className="text-content-body">
+                      <span className="font-medium capitalize">{(h.status || '').replace(/_/g, ' ')}</span>
+                      {' - '}{new Date(h.created_at || h.createdAt).toLocaleString()}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          {loadingDetails && <p className="text-sm text-content-muted">Loading details...</p>}
+        </div>
+        <div className="modal-footer">
+          <button onClick={onClose} className="btn-secondary">Close</button>
+        </div>
+      </div>
+    </div>
+  )
+}
 
 export default function RequestManagement() {
   const [requests, setRequests] = useState([])
@@ -8,6 +115,7 @@ export default function RequestManagement() {
   const [filters, setFilters] = useState({ status: '', search: '', urgency: '' })
   const [sortConfig, setSortConfig] = useState({ key: 'id', direction: 'desc' })
   const [currentPage, setCurrentPage] = useState(1)
+  const [detailRequest, setDetailRequest] = useState(null)
   const itemsPerPage = 8
 
   useEffect(() => {
@@ -184,8 +292,15 @@ export default function RequestManagement() {
                       </div>
                     </div>
                   </div>
-                  <div className="flex-shrink-0 text-right">
+                  <div className="flex-shrink-0 text-right flex flex-col items-end gap-2">
                     <span className={`badge whitespace-nowrap ${getStatusColor(request.status)}`}>{request.status?.replace('_', ' ')}</span>
+                    <button
+                      onClick={() => setDetailRequest(request)}
+                      className="btn-secondary text-sm flex items-center gap-1"
+                      title="View Details"
+                    >
+                      <FiEye className="w-4 h-4" /> Details
+                    </button>
                   </div>
                 </div>
               </div>
@@ -225,6 +340,14 @@ export default function RequestManagement() {
           <FiX className="w-12 h-12 text-content-hint mx-auto mb-4" />
           <p className="text-content-body">No requests found</p>
         </div>
+      )}
+
+      {/* Detail Modal */}
+      {detailRequest && (
+        <DetailModal
+          request={detailRequest}
+          onClose={() => setDetailRequest(null)}
+        />
       )}
     </div>
   )

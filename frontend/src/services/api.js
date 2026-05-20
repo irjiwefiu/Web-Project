@@ -63,6 +63,7 @@ export const technicianAPI = {
   getByCategory: (categoryId) => fetchAPI(`/technicians/category/${categoryId}`),
   getByArea: (area) => fetchAPI(`/technicians/area/${area}`),
   getRating: (id) => fetchAPI(`/technicians/${id}/rating`),
+  getProfile: () => fetchAPI('/dashboard/technician/profile'),
 }
 
 // Service Request API
