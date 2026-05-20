@@ -251,7 +251,7 @@ function ApplicationsModal({ request, onClose, onSuccess, showToast }) {
           ) : applications.length > 0 ? (
             applications.map((app) => {
               const profile = app.technician?.technician_profile
-              const techName = app.technician?.full_name || app.technician?.username || 'Unknown Technician'
+              const techName = app.technician?.name || app.technician?.username || 'Unknown Technician'
               const techId = app.technician?.id || app.id
 
               return (
@@ -645,7 +645,7 @@ export default function CustomerDashboard() {
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-content-primary">My Dashboard</h1>
-        <p className="text-content-body mt-2">Welcome, {user?.full_name || user?.username}. Track your service requests</p>
+        <p className="text-content-body mt-2">Welcome, {user?.name || user?.username}. Track your service requests</p>
       </div>
 
       {/* Quick Stats */}

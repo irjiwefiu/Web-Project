@@ -320,7 +320,7 @@ export default function TechnicianDashboard() {
           <div>
             <span className="text-content-muted">Customer:</span>
             <span className="ml-1 font-medium text-content-primary">
-              {request.customer?.full_name || request.customer?.username || 'N/A'}
+              {request.customer?.name || request.customer?.username || 'N/A'}
             </span>
           </div>
           <div>
@@ -409,7 +409,7 @@ export default function TechnicianDashboard() {
           <div>
             <span className="text-content-muted">Customer:</span>
             <span className="ml-1 font-medium text-content-primary">
-              {request.customer?.full_name || request.customer?.username || 'N/A'}
+              {request.customer?.name || request.customer?.username || 'N/A'}
             </span>
           </div>
           <div>
@@ -708,7 +708,7 @@ export default function TechnicianDashboard() {
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-content-primary">
-          Welcome, {user?.full_name || user?.username || 'Technician'}
+          Welcome, {user?.name || user?.username || 'Technician'}
         </h1>
         <p className="text-content-body mt-2">
           {dashboard?.isAvailable

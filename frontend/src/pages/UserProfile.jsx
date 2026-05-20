@@ -21,7 +21,7 @@ export default function UserProfile() {
   const isTechnician = user?.role === 'technician'
 
   const [profile, setProfile] = useState({
-    full_name: '',
+    name: '',
     email: '',
     skills: '',
     bio: '',
@@ -46,7 +46,7 @@ export default function UserProfile() {
         const techData = techRes.data || {}
 
         setProfile({
-          full_name: userData.full_name || userData.name || user?.name || '',
+          name: userData.name || user?.name || '',
           email: userData.email || user?.email || '',
           skills: Array.isArray(techData.skills) ? techData.skills.join(', ') : (techData.skills || ''),
           bio: techData.bio || '',
@@ -56,7 +56,7 @@ export default function UserProfile() {
         const response = await userAPI.getProfile()
         const data = response.data || {}
         setProfile({
-          full_name: data.full_name || data.name || user?.name || '',
+          name: data.name || user?.name || '',
           email: data.email || user?.email || '',
         })
       }
@@ -76,7 +76,7 @@ export default function UserProfile() {
     setSaving(true)
     try {
       await userAPI.updateProfile({
-        full_name: profile.full_name,
+        name: profile.name,
         email: profile.email,
       })
 
@@ -134,8 +134,8 @@ export default function UserProfile() {
               <input
                 type="text"
                 className="input"
-                value={profile.full_name}
-                onChange={(e) => setProfile((prev) => ({ ...prev, full_name: e.target.value }))}
+                value={profile.name}
+                onChange={(e) => setProfile((prev) => ({ ...prev, name: e.target.value }))}
                 required
               />
             </div>

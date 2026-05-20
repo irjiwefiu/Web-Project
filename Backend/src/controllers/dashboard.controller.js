@@ -147,7 +147,7 @@ const DashboardController = {
                         if (activeAssignment && activeAssignment.technician) {
                             enriched.assignedTechnician = {
                                 id: activeAssignment.technician.id,
-                                name: activeAssignment.technician.full_name || activeAssignment.technician.username,
+                                name: activeAssignment.technician.name || activeAssignment.technician.username,
                             };
                         }
                     }

@@ -76,7 +76,7 @@ function DetailModal({ request, onClose }) {
                   alt="Technician" className="w-10 h-10 rounded-full"
                 />
                 <div>
-                  <p className="font-medium text-content-primary">{activeAssignment.technician?.full_name || activeAssignment.technician?.username || 'Technician'}</p>
+                  <p className="font-medium text-content-primary">{activeAssignment.technician?.name || activeAssignment.technician?.username || 'Technician'}</p>
                   <p className="text-xs text-content-body">Assigned: {new Date(activeAssignment.assigned_at).toLocaleDateString()}</p>
                 </div>
               </div>

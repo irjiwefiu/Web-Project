@@ -212,7 +212,7 @@ function DetailModal({ request, onClose, onCancel, onPayment, onReview, onViewAp
                   className="w-10 h-10 rounded-full"
                 />
                 <div>
-                  <p className="font-medium text-content-primary">{activeAssignment.technician?.full_name || activeAssignment.technician?.username || 'Technician'}</p>
+                  <p className="font-medium text-content-primary">{activeAssignment.technician?.name || activeAssignment.technician?.username || 'Technician'}</p>
                   <p className="text-xs text-content-body">Assigned: {new Date(activeAssignment.assigned_at).toLocaleDateString()}</p>
                 </div>
               </div>
@@ -373,7 +373,7 @@ function ApplicationsModal({ request, onClose, onSuccess }) {
           ) : applications.length > 0 ? (
             applications.map((app) => {
               const profile = app.technician?.technician_profile
-              const techName = app.technician?.full_name || app.technician?.username || 'Unknown Technician'
+              const techName = app.technician?.name || app.technician?.username || 'Unknown Technician'
               const techId = app.technician?.id || app.id
 
               return (
