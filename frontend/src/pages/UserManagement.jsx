@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react'
-import { FiUsers, FiSearch, FiTrash2, FiEye, FiPlus, FiChevronLeft, FiChevronRight } from 'react-icons/fi'
+import { FiUsers, FiSearch, FiTrash2, FiEye, FiPlus, FiChevronLeft, FiChevronRight, FiX, FiMail, FiCalendar, FiHash, FiShield } from 'react-icons/fi'
 import {
   useReactTable,
   getCoreRowModel,
@@ -13,6 +13,7 @@ import { userAPI } from '../services/api'
 export default function UserManagement() {
   const [users, setUsers] = useState([])
   const [loading, setLoading] = useState(true)
+  const [viewUser, setViewUser] = useState(null)
   const [globalFilter, setGlobalFilter] = useState('')
   const [sorting, setSorting] = useState([])
   const [showCreateForm, setShowCreateForm] = useState(false)
@@ -127,7 +128,7 @@ export default function UserManagement() {
       header: 'Actions',
       cell: ({ row }) => (
         <div className="flex items-center justify-end gap-2">
-          <button id={`view-user-${row.original.id}`} className="p-2 hover:bg-surface-inner rounded-lg" title="View">
+          <button id={`view-user-${row.original.id}`} onClick={() => setViewUser(row.original)} className="p-2 hover:bg-surface-inner rounded-lg" title="View">
             <FiEye className="w-4 h-4 text-content-body" />
           </button>
           <button
@@ -351,6 +352,75 @@ export default function UserManagement() {
               >
                 Next <FiChevronRight />
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* User Detail Modal */}
+      {viewUser && (
+        <div className="modal-overlay" onClick={() => setViewUser(null)}>
+          <div className="modal-content max-w-md" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2 className="text-lg font-bold text-content-primary flex items-center gap-2">
+                <FiEye className="w-5 h-5 text-[#7eb8f7]" /> User Details
+              </h2>
+              <button onClick={() => setViewUser(null)} className="text-content-muted hover:text-content-primary">
+                <FiX className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="modal-body">
+              <div className="flex flex-col items-center mb-6">
+                <img
+                  src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${viewUser.id}`}
+                  alt={viewUser.name}
+                  className="w-20 h-20 rounded-full mb-3 ring-2 ring-border"
+                />
+                <h3 className="text-xl font-bold text-content-primary">{viewUser.name || viewUser.username}</h3>
+                {viewUser.role && (
+                  <span className={`mt-1 px-3 py-0.5 rounded-full text-xs font-semibold capitalize ${
+                    viewUser.role?.name === 'admin' ? 'bg-status-danger-bg text-status-danger-text' :
+                    viewUser.role?.name === 'technician' ? 'bg-status-info-bg text-status-info-text' :
+                    'bg-status-success-bg text-status-success-text'
+                  }`}>
+                    {viewUser.role?.name || 'N/A'}
+                  </span>
+                )}
+              </div>
+              <div className="space-y-3 bg-surface-inner rounded-lg p-4">
+                <div className="flex items-center gap-3">
+                  <FiHash className="w-4 h-4 text-content-muted flex-shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-xs text-content-muted">User ID</p>
+                    <p className="text-sm font-semibold text-content-primary truncate">{viewUser.id}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <FiShield className="w-4 h-4 text-content-muted flex-shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-xs text-content-muted">Username</p>
+                    <p className="text-sm font-semibold text-content-primary truncate">{viewUser.username || '—'}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <FiMail className="w-4 h-4 text-content-muted flex-shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-xs text-content-muted">Email</p>
+                    <p className="text-sm font-semibold text-content-primary truncate">{viewUser.email || '—'}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <FiCalendar className="w-4 h-4 text-content-muted flex-shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-xs text-content-muted">Joined</p>
+                    <p className="text-sm font-semibold text-content-primary">
+                      {viewUser.created_at ? new Date(viewUser.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : '—'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button onClick={() => setViewUser(null)} className="btn-secondary">Close</button>
             </div>
           </div>
         </div>

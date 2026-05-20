@@ -19,8 +19,8 @@ function StatCard({ icon: Icon, label, value, color, onClick }) {
         <Icon className="w-6 h-6 text-white" />
       </div>
       <div>
-        <p className="text-sm text-content-muted">{label}</p>
-        <p className="text-2xl font-bold text-content-primary">{value}</p>
+        <p className="text-sm text-content-muted truncate">{label}</p>
+        <p className="text-2xl font-bold text-content-primary truncate">{value}</p>
       </div>
     </div>
   )
@@ -291,7 +291,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-5 mb-8">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-5 mb-8">
         <StatCard icon={FiUsers} label="Total Users" value={stats.totalUsers || 0} color="bg-blue-500"
           onClick={() => navigate('/admin/users')} />
         <StatCard icon={FiClipboard} label="In Progress" value={stats.activeServiceRequests || 0} color="bg-yellow-500"
