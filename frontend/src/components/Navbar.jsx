@@ -15,6 +15,7 @@ export default function Navbar() {
   const [showNotifications, setShowNotifications] = useState(false)
   const [notifications, setNotifications] = useState([])
   const [loadingNotifs, setLoadingNotifs] = useState(false)
+  const [selectedNotif, setSelectedNotif] = useState(null)
   const notifRef = useRef(null)
 
   const handleLogout = () => {
@@ -142,14 +143,8 @@ export default function Navbar() {
                         <div
                           key={n.id}
                           onClick={() => {
+                            setSelectedNotif(n)
                             setShowNotifications(false)
-                            if (user?.role === 'technician') {
-                              navigate('/dashboard/technician')
-                            } else if (user?.role === 'customer') {
-                              navigate('/customer/requests')
-                            } else {
-                              navigate('/admin/requests')
-                            }
                           }}
                           className="px-4 py-3 border-b border-border last:border-0 transition-colors cursor-pointer hover:bg-surface-inner"
                         >
@@ -203,6 +198,61 @@ export default function Navbar() {
           </div>
         </div>
       </nav>
+
+      {selectedNotif && (
+        <div className="modal-overlay" onClick={() => setSelectedNotif(null)}>
+          <div className="modal-content max-w-lg" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3 className="text-lg font-bold text-content-primary">Job Details</h3>
+              <button onClick={() => setSelectedNotif(null)} className="btn-icon">
+                <FiX className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="modal-body space-y-3">
+              <p className="text-sm text-content-body">{selectedNotif.message}</p>
+              {selectedNotif.time && (
+                <p className="text-xs text-content-muted">{selectedNotif.time}</p>
+              )}
+              {selectedNotif.request && (
+                <>
+                  <hr className="border-border" />
+                  <div className="space-y-2">
+                    <p className="text-sm font-semibold text-content-primary">
+                      {selectedNotif.request.title || 'Service Request'}
+                    </p>
+                    {selectedNotif.request.description && (
+                      <p className="text-sm text-content-body">{selectedNotif.request.description}</p>
+                    )}
+                    <div className="grid grid-cols-2 gap-2 text-sm">
+                      {selectedNotif.request.category?.name && (
+                        <div><span className="text-content-muted">Category:</span> <span className="text-content-primary">{selectedNotif.request.category.name}</span></div>
+                      )}
+                      {selectedNotif.request.location && (
+                        <div><span className="text-content-muted">Location:</span> <span className="text-content-primary">{selectedNotif.request.location}</span></div>
+                      )}
+                      {(selectedNotif.request.budget_min || selectedNotif.request.budget_max) && (
+                        <div><span className="text-content-muted">Budget:</span> <span className="text-content-primary">${selectedNotif.request.budget_min || 0} - ${selectedNotif.request.budget_max || 0}</span></div>
+                      )}
+                      {selectedNotif.request.urgency && (
+                        <div><span className="text-content-muted">Urgency:</span> <span className="text-content-primary">{selectedNotif.request.urgency}</span></div>
+                      )}
+                      {selectedNotif.request.customer?.name && (
+                        <div><span className="text-content-muted">Customer:</span> <span className="text-content-primary">{selectedNotif.request.customer.name}</span></div>
+                      )}
+                      {selectedNotif.request.status && (
+                        <div><span className="text-content-muted">Status:</span> <span className="text-content-primary">{selectedNotif.request.status.replace(/_/g, ' ')}</span></div>
+                      )}
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+            <div className="modal-footer">
+              <button onClick={() => setSelectedNotif(null)} className="btn-secondary">Close</button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   )
 }
