@@ -155,8 +155,9 @@ export default function Navbar() {
           {/* Theme Toggle */}
           <button
             onClick={() => dispatch(toggleTheme())}
-            className="p-2 text-content-body hover:bg-surface-inner rounded-lg transition-colors"
-            title="Toggle theme"
+            className="p-2 rounded-lg transition-colors flex items-center gap-2
+              text-[#7eb8f7] hover:bg-[#1e2d4a] border border-[#7eb8f7]/30"
+            title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
           >
             {theme === 'dark' ? <FiSun className="w-5 h-5" /> : <FiMoon className="w-5 h-5" />}
           </button>

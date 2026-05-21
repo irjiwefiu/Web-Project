@@ -81,8 +81,9 @@ export default function Register() {
       {/* Theme Toggle */}
       <button
         onClick={() => dispatch(toggleTheme())}
-        className="absolute top-4 right-4 p-2.5 bg-surface border border-border rounded-lg text-content-body hover:text-content-primary shadow-lg transition-colors"
-        title="Toggle theme"
+        className="absolute top-4 right-4 p-2.5 rounded-lg shadow-lg transition-all flex items-center gap-2
+          bg-[#1e2d4a] text-[#7eb8f7] hover:bg-[#283b61] border border-[#7eb8f7]/30"
+        title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
       >
         {theme === 'dark' ? <FiSun className="w-5 h-5" /> : <FiMoon className="w-5 h-5" />}
       </button>

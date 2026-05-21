@@ -11,12 +11,17 @@ import {
   FiTool,
   FiUser,
   FiBarChart2,
+  FiSun,
+  FiMoon,
 } from 'react-icons/fi'
-import { useSelector } from 'react-redux'
+import { useSelector, useDispatch } from 'react-redux'
+import { toggleTheme } from '../store/slices/themeSlice'
 
 export default function Sidebar({ role }) {
   const location = useLocation()
   const isSidebarOpen = useSelector((state) => state.ui.isSidebarOpen)
+  const theme = useSelector((state) => state.theme.mode)
+  const dispatch = useDispatch()
 
   const getMenuItems = () => {
     if (role === 'admin') {
@@ -96,6 +101,22 @@ export default function Sidebar({ role }) {
           )
         })}
       </nav>
+
+      {/* Theme Toggle */}
+      <div className={`border-t border-border p-3 ${isSidebarOpen ? '' : 'flex justify-center'}`}>
+        <button
+          onClick={() => dispatch(toggleTheme())}
+          className={`flex items-center gap-3 px-3 py-2.5 rounded-md transition-all w-full
+            text-content-body hover:bg-surface-inner hover:text-content-primary
+            ${!isSidebarOpen ? 'justify-center' : ''}`}
+          title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+        >
+          {theme === 'dark' ? <FiSun className="w-5 h-5 flex-shrink-0" /> : <FiMoon className="w-5 h-5 flex-shrink-0" />}
+          {isSidebarOpen && (
+            <span className="font-medium text-sm">{theme === 'dark' ? 'Light Mode' : 'Dark Mode'}</span>
+          )}
+        </button>
+      </div>
     </aside>
   )
 }
