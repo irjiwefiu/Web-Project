@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react'
-import { FiMenu, FiLogOut, FiUser, FiBell, FiCheck, FiClock, FiAlertCircle, FiInfo, FiX, FiSun, FiMoon } from 'react-icons/fi'
+import { FiMenu, FiLogOut, FiUser, FiBell, FiCheck, FiClock, FiAlertCircle, FiInfo, FiX, FiSun, FiMoon, FiStar, FiDollarSign, FiMapPin, FiTag } from 'react-icons/fi'
 import { useSelector, useDispatch } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import { logout } from '../store/slices/authSlice'
@@ -15,6 +15,7 @@ export default function Navbar() {
   const [showNotifications, setShowNotifications] = useState(false)
   const [notifications, setNotifications] = useState([])
   const [loadingNotifs, setLoadingNotifs] = useState(false)
+  const [selectedJob, setSelectedJob] = useState(null)
   const notifRef = useRef(null)
 
   const handleLogout = () => {
@@ -34,6 +35,7 @@ export default function Navbar() {
           color: r.status === 'completed' ? 'text-green-400' : r.status === 'cancelled' ? 'text-red-400' : 'text-[#7eb8f7]',
           message: `Request "${r.title}" is now ${(r.status || '').replace(/_/g, ' ')}`,
           time: new Date(r.updated_at || r.createdAt || Date.now()).toLocaleString(),
+          request: r || null,
         }))
         setNotifications(items.length ? items : [{ id: 'empty', icon: FiInfo, color: 'text-content-muted', message: 'No notifications yet', time: '' }])
       } else if (user?.role === 'technician') {
@@ -49,6 +51,7 @@ export default function Navbar() {
           color: 'text-[#7eb8f7]',
           message: `Assignment for "${a.request?.title || 'request'}" - ${(a.status || '').replace(/_/g, ' ')}`,
           time: new Date(a.assigned_at || Date.now()).toLocaleString(),
+          request: a.request || null,
         }))
         setNotifications(items.length ? items : [{ id: 'empty', icon: FiInfo, color: 'text-content-muted', message: 'No notifications yet', time: '' }])
       } else {
@@ -60,6 +63,7 @@ export default function Navbar() {
           color: 'text-content-muted',
           message: `Request "${r.title}" - ${(r.status || '').replace(/_/g, ' ')}`,
           time: new Date(r.updated_at || r.createdAt || Date.now()).toLocaleString(),
+          request: r || null,
         }))
         setNotifications(items.length ? items : [{ id: 'empty', icon: FiInfo, color: 'text-content-muted', message: 'No notifications yet', time: '' }])
       }
@@ -91,100 +95,208 @@ export default function Navbar() {
   const hasNotifications = notifications.length > 0 && notifications[0].id !== 'empty'
 
   return (
-    <nav className="bg-surface border-b border-border sticky top-0 z-40">
-      <div className="px-6 py-4 flex items-center justify-between">
-        {/* Left */}
-        <div className="flex items-center gap-4">
-          <button
-            onClick={() => dispatch(toggleSidebar())}
-            className="p-2 hover:bg-surface-inner rounded-lg transition-colors"
-          >
-            <FiMenu className="w-6 h-6 text-content-body" />
-          </button>
-        </div>
-
-        {/* Right */}
-        <div className="flex items-center gap-6">
-          {/* Notifications */}
-          <div className="relative" ref={notifRef}>
+    <>
+      <nav className="bg-surface border-b border-border sticky top-0 z-40">
+        <div className="px-6 py-4 flex items-center justify-between">
+          {/* Left */}
+          <div className="flex items-center gap-4">
             <button
-              onClick={toggleNotifications}
-              className="relative p-2 text-content-body hover:bg-surface-inner rounded-lg transition-colors"
+              onClick={() => dispatch(toggleSidebar())}
+              className="p-2 hover:bg-surface-inner rounded-lg transition-colors"
             >
-              <FiBell className="w-6 h-6" />
-              {hasNotifications && (
-                <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-              )}
+              <FiMenu className="w-6 h-6 text-content-body" />
             </button>
+          </div>
 
-            {showNotifications && (
-              <div className="absolute right-0 top-full mt-2 w-80 bg-surface border border-border rounded-lg shadow-2xl z-50 animate-slide-up overflow-hidden">
-                <div className="flex items-center justify-between px-4 py-3 border-b border-border">
-                  <h3 className="font-semibold text-content-primary text-sm">Notifications</h3>
-                  <button onClick={() => setShowNotifications(false)} className="btn-icon">
-                    <FiX className="w-4 h-4" />
-                  </button>
-                </div>
-                <div className="max-h-72 overflow-y-auto">
-                  {loadingNotifs ? (
-                    <div className="px-4 py-8 text-center">
-                      <div className="w-5 h-5 border-2 border-[#7eb8f7] border-t-transparent rounded-full animate-spin mx-auto mb-2" />
-                      <p className="text-xs text-content-muted">Loading...</p>
-                    </div>
-                  ) : (
-                    notifications.map((n) => {
-                      const Icon = n.icon
-                      return (
-                        <div key={n.id} className="px-4 py-3 border-b border-border last:border-0 hover:bg-surface-inner transition-colors cursor-default">
-                          <div className="flex items-start gap-3">
-                            <Icon className={`w-5 h-5 mt-0.5 flex-shrink-0 ${n.color}`} />
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm text-content-primary leading-snug">{n.message}</p>
-                              {n.time && <p className="text-xs text-content-muted mt-1">{n.time}</p>}
+          {/* Right */}
+          <div className="flex items-center gap-6">
+            {/* Notifications */}
+            <div className="relative" ref={notifRef}>
+              <button
+                onClick={toggleNotifications}
+                className="relative p-2 text-content-body hover:bg-surface-inner rounded-lg transition-colors"
+              >
+                <FiBell className="w-6 h-6" />
+                {hasNotifications && (
+                  <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+                )}
+              </button>
+
+              {showNotifications && (
+                <div className="absolute right-0 top-full mt-2 w-80 bg-surface border border-border rounded-lg shadow-2xl z-50 animate-slide-up overflow-hidden">
+                  <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+                    <h3 className="font-semibold text-content-primary text-sm">Notifications</h3>
+                    <button onClick={() => setShowNotifications(false)} className="btn-icon">
+                      <FiX className="w-4 h-4" />
+                    </button>
+                  </div>
+                  <div className="max-h-72 overflow-y-auto">
+                    {loadingNotifs ? (
+                      <div className="px-4 py-8 text-center">
+                        <div className="w-5 h-5 border-2 border-[#7eb8f7] border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+                        <p className="text-xs text-content-muted">Loading...</p>
+                      </div>
+                    ) : (
+                      notifications.map((n) => {
+                        const Icon = n.icon
+                        return (
+                          <div
+                            key={n.id}
+                            onClick={() => {
+                              if (n.request) {
+                                setSelectedJob(n.request)
+                                setShowNotifications(false)
+                              }
+                            }}
+                            className={`px-4 py-3 border-b border-border last:border-0 transition-colors ${
+                              n.request ? 'cursor-pointer hover:bg-surface-inner' : 'cursor-default'
+                            }`}
+                          >
+                            <div className="flex items-start gap-3">
+                              <Icon className={`w-5 h-5 mt-0.5 flex-shrink-0 ${n.color}`} />
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm text-content-primary leading-snug">{n.message}</p>
+                                {n.time && <p className="text-xs text-content-muted mt-1">{n.time}</p>}
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      )
-                    })
-                  )}
+                        )
+                      })
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Theme Toggle */}
+            <button
+              onClick={() => dispatch(toggleTheme())}
+              className="p-2 rounded-lg transition-colors flex items-center gap-2
+                text-[#7eb8f7] hover:bg-[#1e2d4a] border border-[#7eb8f7]/30"
+              title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+            >
+              {theme === 'dark' ? <FiSun className="w-5 h-5" /> : <FiMoon className="w-5 h-5" />}
+            </button>
+
+            {/* User Menu */}
+            <div className="flex items-center gap-3 border-l border-border pl-6">
+              <div className="text-right">
+                <p className="text-sm font-semibold text-content-primary">{user?.name}</p>
+                <p className="text-xs text-content-muted capitalize">{user?.role}</p>
+              </div>
+              <img
+                src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.id}`}
+                alt={user?.name}
+                className="w-10 h-10 rounded-full ring-2 ring-border"
+              />
+            </div>
+
+            {/* Logout */}
+            <button
+              onClick={handleLogout}
+              className="p-2 text-content-body hover:bg-status-danger-bg hover:text-status-danger-text rounded-lg transition-colors"
+              title="Logout"
+            >
+              <FiLogOut className="w-6 h-6" />
+            </button>
+          </div>
+        </div>
+      </nav>
+
+      {/* Job Detail Modal */}
+      {selectedJob && (
+        <div className="modal-overlay" onClick={() => setSelectedJob(null)}>
+          <div className="modal-content max-w-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3 className="text-xl font-bold text-content-primary">{selectedJob.title}</h3>
+              <button onClick={() => setSelectedJob(null)} className="btn-icon">
+                <FiX className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="modal-body space-y-4">
+              <div className="flex items-center gap-3 flex-wrap">
+                <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                  selectedJob.status === 'completed' ? 'bg-status-success-bg text-status-success-text' :
+                  selectedJob.status === 'cancelled' ? 'bg-status-danger-bg text-status-danger-text' :
+                  selectedJob.status === 'in_progress' ? 'badge-progress' :
+                  selectedJob.status === 'on_the_way' ? 'badge-onway' :
+                  selectedJob.status === 'assigned' ? 'bg-status-info-bg text-status-info-text' :
+                  'bg-status-warning-bg text-status-warning-text'
+                } border border-border`}>
+                  {(selectedJob.status || 'requested').replace(/_/g, ' ')}
+                </span>
+                {selectedJob.urgency && (
+                  <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                    selectedJob.urgency === 'urgent' ? 'bg-status-danger-bg text-status-danger-text' :
+                    selectedJob.urgency === 'high' ? 'bg-[#2d1510] text-[#fb923c]' :
+                    selectedJob.urgency === 'low' ? 'bg-surface-inner text-content-muted' :
+                    'bg-[#2d2010] text-[#fbbf24]'
+                  } border border-border`}>
+                    {selectedJob.urgency}
+                  </span>
+                )}
+                {selectedJob.is_paid && (
+                  <span className="px-3 py-1 rounded-full text-xs font-medium bg-status-success-bg text-status-success-text border border-border">Paid</span>
+                )}
+              </div>
+              <div>
+                <p className="text-content-body leading-relaxed">{selectedJob.description || 'No description provided.'}</p>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="flex items-center gap-2">
+                  <FiTag className="w-4 h-4 text-content-muted" />
+                  <div>
+                    <p className="text-xs text-content-muted">Category</p>
+                    <p className="text-sm font-medium text-content-primary">{selectedJob.category?.name || 'General'}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <FiDollarSign className="w-4 h-4 text-content-muted" />
+                  <div>
+                    <p className="text-xs text-content-muted">Budget</p>
+                    <p className="text-sm font-medium text-content-primary">${selectedJob.budget_min || 0} - ${selectedJob.budget_max || 0}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <FiMapPin className="w-4 h-4 text-content-muted" />
+                  <div>
+                    <p className="text-xs text-content-muted">Location</p>
+                    <p className="text-sm font-medium text-content-primary">{selectedJob.location || 'N/A'}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <FiClock className="w-4 h-4 text-content-muted" />
+                  <div>
+                    <p className="text-xs text-content-muted">Preferred Time</p>
+                    <p className="text-sm font-medium text-content-primary">
+                      {selectedJob.preferred_time
+                        ? new Date(selectedJob.preferred_time).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+                        : 'Flexible'}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <FiUser className="w-4 h-4 text-content-muted" />
+                  <div>
+                    <p className="text-xs text-content-muted">Customer</p>
+                    <p className="text-sm font-medium text-content-primary">{selectedJob.customer?.name || selectedJob.customer?.username || 'N/A'}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <FiStar className="w-4 h-4 text-content-muted" />
+                  <div>
+                    <p className="text-xs text-content-muted">Price</p>
+                    <p className="text-sm font-medium text-content-primary">${selectedJob.price || '0.00'}</p>
+                  </div>
                 </div>
               </div>
-            )}
-          </div>
-
-          {/* Theme Toggle */}
-          <button
-            onClick={() => dispatch(toggleTheme())}
-            className="p-2 rounded-lg transition-colors flex items-center gap-2
-              text-[#7eb8f7] hover:bg-[#1e2d4a] border border-[#7eb8f7]/30"
-            title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
-          >
-            {theme === 'dark' ? <FiSun className="w-5 h-5" /> : <FiMoon className="w-5 h-5" />}
-          </button>
-
-          {/* User Menu */}
-          <div className="flex items-center gap-3 border-l border-border pl-6">
-            <div className="text-right">
-              <p className="text-sm font-semibold text-content-primary">{user?.name}</p>
-              <p className="text-xs text-content-muted capitalize">{user?.role}</p>
             </div>
-            <img
-              src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.id}`}
-              alt={user?.name}
-              className="w-10 h-10 rounded-full ring-2 ring-border"
-            />
+            <div className="modal-footer">
+              <button onClick={() => setSelectedJob(null)} className="btn-secondary">Close</button>
+            </div>
           </div>
-
-          {/* Logout */}
-          <button
-            onClick={handleLogout}
-            className="p-2 text-content-body hover:bg-status-danger-bg hover:text-status-danger-text rounded-lg transition-colors"
-            title="Logout"
-          >
-            <FiLogOut className="w-6 h-6" />
-          </button>
         </div>
-      </div>
-    </nav>
+      )}
+    </>
   )
 }
