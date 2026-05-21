@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react'
-import { FiMenu, FiLogOut, FiUser, FiBell, FiCheck, FiClock, FiAlertCircle, FiInfo, FiX, FiSun, FiMoon, FiStar, FiDollarSign, FiMapPin, FiTag } from 'react-icons/fi'
+import { FiMenu, FiLogOut, FiUser, FiBell, FiCheck, FiClock, FiAlertCircle, FiInfo, FiX, FiSun, FiMoon } from 'react-icons/fi'
 import { useSelector, useDispatch } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import { logout } from '../store/slices/authSlice'
@@ -15,7 +15,6 @@ export default function Navbar() {
   const [showNotifications, setShowNotifications] = useState(false)
   const [notifications, setNotifications] = useState([])
   const [loadingNotifs, setLoadingNotifs] = useState(false)
-  const [selectedJob, setSelectedJob] = useState(null)
   const notifRef = useRef(null)
 
   const handleLogout = () => {
@@ -140,26 +139,28 @@ export default function Navbar() {
                       notifications.map((n) => {
                         const Icon = n.icon
                         return (
-                          <div
-                            key={n.id}
-                            onClick={() => {
-                              if (n.request) {
-                                setSelectedJob(n.request)
-                                setShowNotifications(false)
-                              }
-                            }}
-                            className={`px-4 py-3 border-b border-border last:border-0 transition-colors ${
-                              n.request ? 'cursor-pointer hover:bg-surface-inner' : 'cursor-default'
-                            }`}
-                          >
-                            <div className="flex items-start gap-3">
-                              <Icon className={`w-5 h-5 mt-0.5 flex-shrink-0 ${n.color}`} />
-                              <div className="flex-1 min-w-0">
-                                <p className="text-sm text-content-primary leading-snug">{n.message}</p>
-                                {n.time && <p className="text-xs text-content-muted mt-1">{n.time}</p>}
-                              </div>
+                        <div
+                          key={n.id}
+                          onClick={() => {
+                            setShowNotifications(false)
+                            if (user?.role === 'technician') {
+                              navigate('/dashboard/technician')
+                            } else if (user?.role === 'customer') {
+                              navigate('/customer/requests')
+                            } else {
+                              navigate('/admin/requests')
+                            }
+                          }}
+                          className="px-4 py-3 border-b border-border last:border-0 transition-colors cursor-pointer hover:bg-surface-inner"
+                        >
+                          <div className="flex items-start gap-3">
+                            <Icon className={`w-5 h-5 mt-0.5 flex-shrink-0 ${n.color}`} />
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm text-content-primary leading-snug">{n.message}</p>
+                              {n.time && <p className="text-xs text-content-muted mt-1">{n.time}</p>}
                             </div>
                           </div>
+                        </div>
                         )
                       })
                     )}
@@ -202,101 +203,6 @@ export default function Navbar() {
           </div>
         </div>
       </nav>
-
-      {/* Job Detail Modal */}
-      {selectedJob && (
-        <div className="modal-overlay" onClick={() => setSelectedJob(null)}>
-          <div className="modal-content max-w-2xl" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h3 className="text-xl font-bold text-content-primary">{selectedJob.title}</h3>
-              <button onClick={() => setSelectedJob(null)} className="btn-icon">
-                <FiX className="w-5 h-5" />
-              </button>
-            </div>
-            <div className="modal-body space-y-4">
-              <div className="flex items-center gap-3 flex-wrap">
-                <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                  selectedJob.status === 'completed' ? 'bg-status-success-bg text-status-success-text' :
-                  selectedJob.status === 'cancelled' ? 'bg-status-danger-bg text-status-danger-text' :
-                  selectedJob.status === 'in_progress' ? 'badge-progress' :
-                  selectedJob.status === 'on_the_way' ? 'badge-onway' :
-                  selectedJob.status === 'assigned' ? 'bg-status-info-bg text-status-info-text' :
-                  'bg-status-warning-bg text-status-warning-text'
-                } border border-border`}>
-                  {(selectedJob.status || 'requested').replace(/_/g, ' ')}
-                </span>
-                {selectedJob.urgency && (
-                  <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                    selectedJob.urgency === 'urgent' ? 'bg-status-danger-bg text-status-danger-text' :
-                    selectedJob.urgency === 'high' ? 'bg-[#2d1510] text-[#fb923c]' :
-                    selectedJob.urgency === 'low' ? 'bg-surface-inner text-content-muted' :
-                    'bg-[#2d2010] text-[#fbbf24]'
-                  } border border-border`}>
-                    {selectedJob.urgency}
-                  </span>
-                )}
-                {selectedJob.is_paid && (
-                  <span className="px-3 py-1 rounded-full text-xs font-medium bg-status-success-bg text-status-success-text border border-border">Paid</span>
-                )}
-              </div>
-              <div>
-                <p className="text-content-body leading-relaxed">{selectedJob.description || 'No description provided.'}</p>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="flex items-center gap-2">
-                  <FiTag className="w-4 h-4 text-content-muted" />
-                  <div>
-                    <p className="text-xs text-content-muted">Category</p>
-                    <p className="text-sm font-medium text-content-primary">{selectedJob.category?.name || 'General'}</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <FiDollarSign className="w-4 h-4 text-content-muted" />
-                  <div>
-                    <p className="text-xs text-content-muted">Budget</p>
-                    <p className="text-sm font-medium text-content-primary">${selectedJob.budget_min || 0} - ${selectedJob.budget_max || 0}</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <FiMapPin className="w-4 h-4 text-content-muted" />
-                  <div>
-                    <p className="text-xs text-content-muted">Location</p>
-                    <p className="text-sm font-medium text-content-primary">{selectedJob.location || 'N/A'}</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <FiClock className="w-4 h-4 text-content-muted" />
-                  <div>
-                    <p className="text-xs text-content-muted">Preferred Time</p>
-                    <p className="text-sm font-medium text-content-primary">
-                      {selectedJob.preferred_time
-                        ? new Date(selectedJob.preferred_time).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-                        : 'Flexible'}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <FiUser className="w-4 h-4 text-content-muted" />
-                  <div>
-                    <p className="text-xs text-content-muted">Customer</p>
-                    <p className="text-sm font-medium text-content-primary">{selectedJob.customer?.name || selectedJob.customer?.username || 'N/A'}</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <FiStar className="w-4 h-4 text-content-muted" />
-                  <div>
-                    <p className="text-xs text-content-muted">Price</p>
-                    <p className="text-sm font-medium text-content-primary">${selectedJob.price || '0.00'}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="modal-footer">
-              <button onClick={() => setSelectedJob(null)} className="btn-secondary">Close</button>
-            </div>
-          </div>
-        </div>
-      )}
     </>
   )
 }
