@@ -839,8 +839,85 @@ export default function TechnicianDashboard() {
               <p className="text-content-body">Check back later for new service requests in your area.</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {availableRequests.map((request) => renderAvailableRequestCard(request))}
+            <div className="card p-0 overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="table-header">
+                    <th className="table-cell text-left font-semibold">Title</th>
+                    <th className="table-cell text-left font-semibold">Category</th>
+                    <th className="table-cell text-left font-semibold">Urgency</th>
+                    <th className="table-cell text-left font-semibold">Budget</th>
+                    <th className="table-cell text-left font-semibold">Location</th>
+                    <th className="table-cell text-left font-semibold">Posted</th>
+                    <th className="table-cell text-center font-semibold">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {availableRequests.map((request) => {
+                    const assignmentStatus = getAssignmentStatusForRequest(request.id)
+                    const isApplied = assignmentStatus === 'applied'
+                    const isRejected = assignmentStatus === 'rejected'
+                    const isApplying = applyingIds.has(request.id)
+
+                    return (
+                      <tr key={request.id} className="table-row">
+                        <td className="table-cell">
+                          <div className="flex flex-col">
+                            <span className="font-medium text-content-primary">{request.title}</span>
+                            <span className="text-xs text-content-muted mt-0.5 line-clamp-1">{request.description}</span>
+                          </div>
+                        </td>
+                        <td className="table-cell text-content-body">{request.category?.name || 'General'}</td>
+                        <td className="table-cell">
+                          <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${getUrgencyColor(request.urgency)}`}>
+                            {request.urgency || 'medium'}
+                          </span>
+                        </td>
+                        <td className="table-cell text-content-primary font-medium">
+                          ${request.budget_min || 0} - ${request.budget_max || 0}
+                        </td>
+                        <td className="table-cell text-content-body">{request.location || 'N/A'}</td>
+                        <td className="table-cell text-content-muted text-xs">{formatDate(request.created_at)}</td>
+                        <td className="table-cell text-center">
+                          {isApplied ? (
+                            <span className="badge-applied px-3 py-1 rounded-md text-xs whitespace-nowrap">
+                              ✓ Applied
+                            </span>
+                          ) : isRejected ? (
+                            <span className="btn-rejected px-3 py-1 rounded-md text-xs whitespace-nowrap">
+                              ✕ Rejected
+                            </span>
+                          ) : (
+                            <button
+                              onClick={() => applyForRequest(request.id)}
+                              disabled={isApplying || !dashboard?.isAvailable}
+                              className={`px-4 py-1.5 rounded-md text-xs font-medium transition-all duration-200 whitespace-nowrap ${
+                                isApplying || !dashboard?.isAvailable
+                                  ? 'bg-surface-inner text-content-muted cursor-not-allowed'
+                                  : 'btn-success-hover'
+                              }`}
+                            >
+                              {isApplying ? (
+                                <span className="flex items-center gap-1">
+                                  <svg className="animate-spin h-3 w-3" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                                  </svg>
+                                  ...
+                                </span>
+                              ) : !dashboard?.isAvailable ? (
+                                'Unavailable'
+                              ) : (
+                                'Apply'
+                              )}
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
             </div>
           )}
         </div>
