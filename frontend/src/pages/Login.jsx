@@ -1,14 +1,16 @@
 import React, { useState } from 'react'
-import { FiMail, FiLock, FiUser, FiArrowRight } from 'react-icons/fi'
+import { FiMail, FiLock, FiUser, FiArrowRight, FiSun, FiMoon } from 'react-icons/fi'
 import { useNavigate, Link } from 'react-router-dom'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { authAPI } from '../services/api'
 import { loginSuccess, setError } from '../store/slices/authSlice'
+import { toggleTheme } from '../store/slices/themeSlice'
 
 export default function Login() {
   const [formData, setFormData] = useState({ email: '', password: '' })
   const [loading, setLoading] = useState(false)
   const [error, setLocalError] = useState('')
+  const theme = useSelector((state) => state.theme.mode)
   const navigate = useNavigate()
   const dispatch = useDispatch()
 
@@ -34,7 +36,15 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen bg-page flex items-center justify-center p-4">
+    <div className="min-h-screen bg-page flex items-center justify-center p-4 relative">
+      {/* Theme Toggle */}
+      <button
+        onClick={() => dispatch(toggleTheme())}
+        className="absolute top-4 right-4 p-2.5 bg-surface border border-border rounded-lg text-content-body hover:text-content-primary shadow-lg transition-colors"
+        title="Toggle theme"
+      >
+        {theme === 'dark' ? <FiSun className="w-5 h-5" /> : <FiMoon className="w-5 h-5" />}
+      </button>
       <div className="w-full max-w-md">
         {/* Card */}
         <div className="bg-surface rounded-md border border-border shadow-2xl p-8 animate-fade-in">
@@ -91,7 +101,7 @@ export default function Login() {
 
             {/* Error */}
             {error && (
-              <div className="bg-status-danger-bg border border-[#5c2020] text-status-danger-text px-4 py-3 rounded-sm text-sm">
+              <div className="bg-status-danger-bg border border-border text-status-danger-text px-4 py-3 rounded-sm text-sm">
                 {error}
               </div>
             )}

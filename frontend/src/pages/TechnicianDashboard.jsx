@@ -197,14 +197,14 @@ export default function TechnicianDashboard() {
   // ── Status Badge ───────────────────────────────────────────────────────────
   const getStatusBadge = (status) => {
     const map = {
-      requested: 'bg-status-warning-bg text-status-warning-text border border-[#5c4a10]',
-      pending: 'bg-status-warning-bg text-status-warning-text border border-[#5c4a10]',
-      assigned: 'bg-status-info-bg text-status-info-text border border-[#1a3a5c]',
-      on_the_way: 'bg-[#0d3d3d] text-[#22d3ee] border border-[#0d5c5c]',
-      in_progress: 'bg-[#1a1a4a] text-[#a78bfa] border border-[#2d2d6e]',
-      completed: 'bg-status-success-bg text-status-success-text border border-[#1a4a2a]',
-      cancelled: 'bg-status-danger-bg text-status-danger-text border border-[#5c2020]',
-      paid: 'bg-status-success-bg text-status-success-text border border-[#1a4a2a]',
+      requested: 'bg-status-warning-bg text-status-warning-text border border-border',
+      pending: 'bg-status-warning-bg text-status-warning-text border border-border',
+      assigned: 'bg-status-info-bg text-status-info-text border border-border',
+      on_the_way: 'badge-onway',
+      in_progress: 'badge-progress',
+      completed: 'bg-status-success-bg text-status-success-text border border-border',
+      cancelled: 'bg-status-danger-bg text-status-danger-text border border-border',
+      paid: 'bg-status-success-bg text-status-success-text border border-border',
     }
     const labels = {
       requested: 'Open',
@@ -226,9 +226,9 @@ export default function TechnicianDashboard() {
   // ── Assignment Status Badge ────────────────────────────────────────────────
   const getAssignmentStatusBadge = (status) => {
     const map = {
-      applied: 'bg-[#1a1a3a] text-[#c084fc] border border-[#3d1d6e]',
-      accepted: 'bg-status-success-bg text-status-success-text border border-[#1a4a2a]',
-      rejected: 'bg-status-danger-bg text-status-danger-text border border-[#5c2020]',
+      applied: 'badge-applied',
+      accepted: 'bg-status-success-bg text-status-success-text border border-border',
+      rejected: 'bg-status-danger-bg text-status-danger-text border border-border',
     }
     const labels = {
       applied: 'Applied',
@@ -420,11 +420,11 @@ export default function TechnicianDashboard() {
 
         {/* Action Button */}
         {isApplied ? (
-          <div className="w-full py-2 px-4 rounded-md font-medium text-sm text-center bg-[#1a1a3a] text-[#c084fc] border border-[#3d1d6e]">
+          <div className="w-full py-2 px-4 rounded-md font-medium text-sm text-center btn-applied">
             ✓ Application Submitted — Awaiting Customer Response
           </div>
         ) : isRejected ? (
-          <div className="w-full py-2 px-4 rounded-md font-medium text-sm text-center bg-status-danger-bg text-status-danger-text border border-[#5c2020]">
+          <div className="w-full py-2 px-4 rounded-md font-medium text-sm text-center btn-rejected">
             ✕ Application Not Accepted
           </div>
         ) : (
@@ -434,7 +434,7 @@ export default function TechnicianDashboard() {
             className={`w-full py-2 px-4 rounded-md font-medium text-sm transition-all duration-200 ${
               isApplying || !dashboard?.isAvailable
                 ? 'bg-surface-inner text-content-muted cursor-not-allowed'
-                : 'bg-status-success-bg text-status-success-text hover:bg-[#1a5a2a] border border-[#1a4a2a]'
+                : 'btn-success-hover'
             }`}
           >
             {isApplying ? (
@@ -565,7 +565,7 @@ export default function TechnicianDashboard() {
           </div>
           <div className="stat-card stat-card-accent-purple">
             <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 rounded-full bg-[#1a1a3a] flex items-center justify-center">
+              <div className="w-10 h-10 rounded-full bg-surface-inner flex items-center justify-center">
                 <FiStar className="w-5 h-5 text-[#c084fc]" />
               </div>
             </div>
@@ -668,8 +668,8 @@ export default function TechnicianDashboard() {
                 togglingAvailability
                   ? 'bg-surface-inner text-content-muted cursor-not-allowed'
                   : dashboard?.isAvailable
-                  ? 'bg-status-danger-bg text-status-danger-text hover:bg-[#3d1515] border border-[#5c2020]'
-                  : 'bg-status-success-bg text-status-success-text hover:bg-[#1a5a2a] border border-[#1a4a2a]'
+                  ? 'btn-danger-hover'
+                  : 'btn-success-hover'
               }`}
             >
               {togglingAvailability ? (
@@ -730,7 +730,7 @@ export default function TechnicianDashboard() {
         </div>
         <div className="stat-card stat-card-accent-purple">
           <div className="flex items-center gap-3 mb-3">
-            <div className="w-10 h-10 rounded-full bg-[#1a1a3a] flex items-center justify-center">
+            <div className="w-10 h-10 rounded-full bg-surface-inner flex items-center justify-center">
               <FiClock className="w-5 h-5 text-[#c084fc]" />
             </div>
           </div>
@@ -775,8 +775,8 @@ export default function TechnicianDashboard() {
               togglingAvailability
                 ? 'bg-surface-inner text-content-muted cursor-not-allowed'
                 : dashboard?.isAvailable
-                ? 'bg-status-danger-bg text-status-danger-text hover:bg-[#3d1515] border border-[#5c2020]'
-                : 'bg-status-success-bg text-status-success-text hover:bg-[#1a5a2a] border border-[#1a4a2a]'
+                ? 'btn-danger-hover'
+                : 'btn-success-hover'
             }`}
           >
             {togglingAvailability ? (

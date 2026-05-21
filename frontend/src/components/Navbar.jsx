@@ -1,13 +1,15 @@
 import React, { useState, useRef, useEffect } from 'react'
-import { FiMenu, FiLogOut, FiUser, FiBell, FiCheck, FiClock, FiAlertCircle, FiInfo, FiX } from 'react-icons/fi'
+import { FiMenu, FiLogOut, FiUser, FiBell, FiCheck, FiClock, FiAlertCircle, FiInfo, FiX, FiSun, FiMoon } from 'react-icons/fi'
 import { useSelector, useDispatch } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import { logout } from '../store/slices/authSlice'
 import { toggleSidebar } from '../store/slices/uiSlice'
+import { toggleTheme } from '../store/slices/themeSlice'
 import { requestAPI, dashboardAPI } from '../services/api'
 
 export default function Navbar() {
   const user = useSelector((state) => state.auth.user)
+  const theme = useSelector((state) => state.theme.mode)
   const dispatch = useDispatch()
   const navigate = useNavigate()
   const [showNotifications, setShowNotifications] = useState(false)
@@ -149,6 +151,15 @@ export default function Navbar() {
               </div>
             )}
           </div>
+
+          {/* Theme Toggle */}
+          <button
+            onClick={() => dispatch(toggleTheme())}
+            className="p-2 text-content-body hover:bg-surface-inner rounded-lg transition-colors"
+            title="Toggle theme"
+          >
+            {theme === 'dark' ? <FiSun className="w-5 h-5" /> : <FiMoon className="w-5 h-5" />}
+          </button>
 
           {/* User Menu */}
           <div className="flex items-center gap-3 border-l border-border pl-6">

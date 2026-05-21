@@ -2,6 +2,109 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── Theme Variables ─────────────────────────── */
+:root,
+[data-theme="dark"] {
+  --color-page: #0f1117;
+  --color-surface: #1a1d27;
+  --color-surface-inner: #23263a;
+  --color-surface-inner-hover: #2a2d3d;
+  --color-border: #2e3140;
+  --color-content-primary: #e8eaf2;
+  --color-content-body: #c4c8dc;
+  --color-content-muted: #8b90a8;
+  --color-content-hint: #4a4f66;
+  --color-status-success-bg: #14301f;
+  --color-status-success-text: #4ade80;
+  --color-status-warning-bg: #2d2010;
+  --color-status-warning-text: #fbbf24;
+  --color-status-info-bg: #0e2040;
+  --color-status-info-text: #7eb8f7;
+  --color-status-danger-bg: #2d1010;
+  --color-status-danger-text: #f87171;
+  --color-badge-onway-bg: #0d3d3d;
+  --color-badge-onway-text: #22d3ee;
+  --color-badge-onway-border: #0d5c5c;
+  --color-badge-progress-bg: #1a1a4a;
+  --color-badge-progress-text: #a78bfa;
+  --color-badge-progress-border: #2d2d6e;
+  --color-badge-applied-bg: #1a1a3a;
+  --color-badge-applied-text: #c084fc;
+  --color-badge-applied-border: #3d1d6e;
+  --color-btn-success-hover: #1a5a2a;
+  --color-btn-danger-hover: #3d1515;
+  --color-border-success: #1a4a2a;
+  --color-border-danger: #5c2020;
+  --color-border-warning: #5c4a10;
+  --color-border-info: #1a3a5c;
+}
+
+[data-theme="light"] {
+  --color-page: #f0f2f5;
+  --color-surface: #ffffff;
+  --color-surface-inner: #e8ebf0;
+  --color-surface-inner-hover: #dcdfe6;
+  --color-border: #d1d5db;
+  --color-content-primary: #1a1d27;
+  --color-content-body: #4a4f66;
+  --color-content-muted: #8b90a8;
+  --color-content-hint: #b0b4c4;
+  --color-status-success-bg: #d1fae5;
+  --color-status-success-text: #059669;
+  --color-status-warning-bg: #fef3c7;
+  --color-status-warning-text: #d97706;
+  --color-status-info-bg: #dbeafe;
+  --color-status-info-text: #2563eb;
+  --color-status-danger-bg: #fee2e2;
+  --color-status-danger-text: #dc2626;
+  --color-badge-onway-bg: #ccfbf1;
+  --color-badge-onway-text: #0d9488;
+  --color-badge-onway-border: #5eead4;
+  --color-badge-progress-bg: #ede9fe;
+  --color-badge-progress-text: #7c3aed;
+  --color-badge-progress-border: #c4b5fd;
+  --color-badge-applied-bg: #f3e8ff;
+  --color-badge-applied-text: #9333ea;
+  --color-badge-applied-border: #d8b4fe;
+  --color-btn-success-hover: #bbf7d0;
+  --color-btn-danger-hover: #fecaca;
+  --color-border-success: #86efac;
+  --color-border-danger: #fca5a5;
+  --color-border-warning: #fcd34d;
+  --color-border-info: #93c5fd;
+}
+
+[data-theme="light"] {
+  --color-page: #f0f2f5;
+  --color-surface: #ffffff;
+  --color-surface-inner: #e8ebf0;
+  --color-surface-inner-hover: #dcdfe6;
+  --color-border: #d1d5db;
+  --color-content-primary: #1a1d27;
+  --color-content-body: #4a4f66;
+  --color-content-muted: #8b90a8;
+  --color-content-hint: #b0b4c4;
+  --color-status-success-bg: #d1fae5;
+  --color-status-success-text: #059669;
+  --color-status-warning-bg: #fef3c7;
+  --color-status-warning-text: #d97706;
+  --color-status-info-bg: #dbeafe;
+  --color-status-info-text: #2563eb;
+  --color-status-danger-bg: #fee2e2;
+  --color-status-danger-text: #dc2626;
+  --color-btn-secondary-hover-bg: #dcdfe6;
+  --color-btn-danger-hover-bg: #fecaca;
+  --color-toast-success-border: #86efac;
+  --color-toast-error-border: #fca5a5;
+}
+
+/* Smooth theme transitions */
+*,
+*::before,
+*::after {
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.15s ease;
+}
+
 @layer base {
   body {
     @apply bg-page text-content-primary font-sans text-base antialiased;
@@ -83,12 +186,12 @@
   .btn-secondary {
     @apply px-4 py-2 rounded-sm text-sm font-medium transition-colors duration-150
            flex items-center justify-center gap-2
-           bg-surface-inner text-content-body hover:bg-[#2a2d3d] border border-border;
+           bg-surface-inner text-content-body hover:bg-surface-inner-hover border border-border;
   }
   .btn-danger {
     @apply px-4 py-2 rounded-sm text-sm font-medium transition-colors duration-150
            flex items-center justify-center gap-2
-           bg-status-danger-bg text-status-danger-text hover:bg-[#3d1515] border border-[#5c2020];
+           bg-status-danger-bg text-status-danger-text hover:bg-surface-inner-hover border border-border;
   }
   .btn-outline {
     @apply px-4 py-2 rounded-sm text-sm font-medium transition-colors duration-150
@@ -138,10 +241,10 @@
     @apply fixed top-4 right-4 z-[100] px-4 py-3 rounded-sm text-sm font-medium shadow-lg animate-slide-up flex items-center gap-2;
   }
   .toast-success {
-    @apply bg-status-success-bg text-status-success-text border border-[#1a4a2a];
+    @apply bg-status-success-bg text-status-success-text border border-border;
   }
   .toast-error {
-    @apply bg-status-danger-bg text-status-danger-text border border-[#5c2020];
+    @apply bg-status-danger-bg text-status-danger-text border border-border;
   }
 
   /* Table styles */
@@ -149,7 +252,10 @@
     @apply bg-surface-inner text-content-body text-xs uppercase tracking-wider;
   }
   .table-row {
-    @apply border-b border-border hover:bg-surface-inner/50 transition-colors;
+    @apply border-b border-border;
+  }
+  .table-row:hover {
+    @apply bg-surface-inner;
   }
   .table-cell {
     @apply px-4 py-3 text-sm text-content-primary;
@@ -186,8 +292,10 @@
 
   /* Glass card variant */
   .card-glass {
-    @apply bg-surface/80 backdrop-blur-sm rounded-lg border border-border/60 p-6
+    @apply backdrop-blur-sm rounded-lg border p-6
            shadow-lg hover:shadow-xl transition-all duration-300;
+    background-color: color-mix(in srgb, var(--color-surface) 80%, transparent);
+    border-color: color-mix(in srgb, var(--color-border) 60%, transparent);
   }
 
   /* Pulse dot indicator */
@@ -230,6 +338,31 @@
   .stat-card-accent-yellow::before { @apply bg-[#f59e0b]; }
   .stat-card-accent-red::before { @apply bg-[#ef4444]; }
   .stat-card-accent-purple::before { @apply bg-[#a855f7]; }
+
+  /* Custom theme-aware badges */
+  .badge-onway {
+    @apply bg-[var(--color-badge-onway-bg)] text-[var(--color-badge-onway-text)] border border-[var(--color-badge-onway-border)];
+  }
+  .badge-progress {
+    @apply bg-[var(--color-badge-progress-bg)] text-[var(--color-badge-progress-text)] border border-[var(--color-badge-progress-border)];
+  }
+  .badge-applied {
+    @apply bg-[var(--color-badge-applied-bg)] text-[var(--color-badge-applied-text)] border border-[var(--color-badge-applied-border)];
+  }
+
+  /* Theme-aware button hover states */
+  .btn-success-hover {
+    @apply bg-status-success-bg text-status-success-text border border-border hover:bg-[var(--color-btn-success-hover)];
+  }
+  .btn-danger-hover {
+    @apply bg-status-danger-bg text-status-danger-text border border-border hover:bg-[var(--color-btn-danger-hover)];
+  }
+  .btn-applied {
+    @apply bg-[var(--color-badge-applied-bg)] text-[var(--color-badge-applied-text)] border border-[var(--color-badge-applied-border)];
+  }
+  .btn-rejected {
+    @apply bg-status-danger-bg text-status-danger-text border border-border;
+  }
 
   /* Application card */
   .app-card {

@@ -219,14 +219,14 @@ export default function CategoryManagement() {
                             <button
                               onClick={() => handleUpdate(cat.id)}
                               disabled={editLoading}
-                              className="p-2 rounded-lg bg-status-success-bg hover:bg-[#1a4a2a] text-status-success-text"
+                              className="p-2 rounded-lg bg-status-success-bg hover:bg-[var(--color-btn-success-hover)] text-status-success-text"
                               title="Save"
                             >
                               <FiCheck className="w-4 h-4" />
                             </button>
                             <button
                               onClick={cancelEdit}
-                              className="p-2 rounded-lg bg-surface-inner hover:bg-[#2a2d3d] text-content-body"
+                              className="p-2 rounded-lg bg-surface-inner hover:bg-surface-inner-hover text-content-body"
                               title="Cancel"
                             >
                               <FiX className="w-4 h-4" />

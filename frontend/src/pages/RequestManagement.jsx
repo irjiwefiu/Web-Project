@@ -322,7 +322,7 @@ export default function RequestManagement() {
                     className={`w-10 h-10 rounded-lg font-semibold transition-colors ${
                       currentPage === page
                         ? 'bg-[#1e2d4a] text-[#7eb8f7]'
-                        : 'bg-surface-inner text-content-body hover:bg-[#2a2d3d]'
+                        : 'bg-surface-inner text-content-body hover:bg-surface-inner-hover'
                     }`}>{page}</button>
                 ))}
               </div>

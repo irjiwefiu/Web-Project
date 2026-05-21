@@ -6,25 +6,26 @@ export default {
   theme: {
     extend: {
       colors: {
-        page: '#0f1117',
-        surface: '#1a1d27',
-        'surface-inner': '#23263a',
-        border: '#2e3140',
+        page: 'var(--color-page)',
+        surface: 'var(--color-surface)',
+        'surface-inner': 'var(--color-surface-inner)',
+        'surface-inner-hover': 'var(--color-surface-inner-hover)',
+        border: 'var(--color-border)',
         content: {
-          primary: '#e8eaf2',
-          body: '#c4c8dc',
-          muted: '#8b90a8',
-          hint: '#4a4f66',
+          primary: 'var(--color-content-primary)',
+          body: 'var(--color-content-body)',
+          muted: 'var(--color-content-muted)',
+          hint: 'var(--color-content-hint)',
         },
         status: {
-          success: { bg: '#14301f', text: '#4ade80' },
-          warning: { bg: '#2d2010', text: '#fbbf24' },
-          info: { bg: '#0e2040', text: '#7eb8f7' },
-          danger: { bg: '#2d1010', text: '#f87171' },
+          success: { bg: 'var(--color-status-success-bg)', text: 'var(--color-status-success-text)' },
+          warning: { bg: 'var(--color-status-warning-bg)', text: 'var(--color-status-warning-text)' },
+          info: { bg: 'var(--color-status-info-bg)', text: 'var(--color-status-info-text)' },
+          danger: { bg: 'var(--color-status-danger-bg)', text: 'var(--color-status-danger-text)' },
         },
         role: {
           admin: { bg: '#1e2d4a', text: '#7eb8f7' },
-          customer: { bg: '#1e2d4a', text: '#7eb8f7' }, // Same as admin based on prompt "Customer = blue"
+          customer: { bg: '#1e2d4a', text: '#7eb8f7' },
           technician: { bg: '#2d2010', text: '#fbbf24' },
         }
       },
